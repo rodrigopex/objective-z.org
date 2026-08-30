@@ -93,10 +93,13 @@ struct Thermostat {
 	int _setpoint;
 	bool _heating;
 	struct Thermometer * _probe;
+	struct OZArray * _bank;
 	struct OZTimer * _poll;
 };
 
 struct Thermostat * Thermostat_initWithProbe_pollEvery_(struct Thermostat *self, struct Thermometer * probe, uint32_t periodMs);
+int Thermostat_worstReading(struct Thermostat *self);
+int Thermostat_spotCheck(struct Thermostat *self);
 BOOL Thermostat_shouldHeat(struct Thermostat *self);
 int Thermostat_setpoint(struct Thermostat *self);
 void Thermostat_setSetpoint_(struct Thermostat *self, int setpoint);

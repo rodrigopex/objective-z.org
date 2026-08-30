@@ -38,6 +38,35 @@ Every line of generated C shown on the site is **real transpiler output**, kept 
 generated side of a pair -- regenerate it. Whitespace-only reflowing to fit the
 code pane is fine; changing an identifier or dropping a line is not.
 
+### The code tour
+
+The `#translate` section is a scroll-linked walkthrough: the left column is the
+whole example file split into groups, the right column is the generated C pinned
+in place with the matching region lit. Both sides are **generated** by
+`tools/gen_tour.py`, which slices exact line ranges out of `examples/` --
+
+```sh
+python3 tools/gen_tour.py <dir-with-thermostat.m-and-final/> /tmp/frag.html
+```
+
+-- and then the fragment is spliced into `index.html`. Do not hand-edit the
+`<span class="g" data-step="N">` groups or the line content inside them; change
+the STEPS table in the generator and re-slice. The generator asserts that every
+whitespace reflow it applies actually matched, so a stale line range fails loudly
+instead of silently emitting the wrong code.
+
+Left group N, caption N and right group N must always exist as a set. The step
+numbers are the only contract between the markup and `js/tour.js`.
+
+`js/tour.js` activates only above `62rem` and only by setting
+`data-tour="on"`; every interactive CSS rule is gated on both. With JS off or on
+a narrow screen the tour is a plain listing with all captions shown and nothing
+dimmed. Keep it that way.
+
+**Splicing gotcha:** the hero pane and the tour pane are both labelled
+`thermostat.m`. Anchoring a replacement on that string alone hits the hero
+first. Anchor on `class="tour-code"` / `<section class="hero">` instead.
+
 ### Syntax highlighting
 
 Token `<span>`s inside `<pre><code>` are **baked into the markup** by
@@ -54,6 +83,10 @@ python3 tools/highlight.py --force index.html     # strip and redo every block
 Never hand-edit a token span. Token classes (`.k .t .fn .c .s .n .at .pp`) are
 scoped to `pre code` in the stylesheet because they are short enough to collide
 with layout classes otherwise.
+
+The highlighter passes existing markup through, so the tour's `class="g"`
+wrappers survive both a highlight and a `--force` re-highlight. Only token spans
+are stripped and rebuilt.
 
 Benchmark numbers are **copied by hand, not generated**. Single source of truth:
 `README.md` in `rodrigopex/objective-z`. When OZ benchmarks change, re-audit every

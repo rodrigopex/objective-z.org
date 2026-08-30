@@ -28,6 +28,7 @@
 
 <link rel="stylesheet" href="/css/main.css">
 <script src="/js/theme.js"></script>
+<script src="/js/tour.js" defer></script>
 </head>
 <body>
 
@@ -138,173 +139,311 @@
 <section id="translate">
   <div class="wrap">
     <p class="eyebrow">What it emits</p>
-    <h2>Every feature, and the C it becomes</h2>
-    <p class="lede">All output below is the transpiler's own, produced from <a href="https://github.com/rodrigopex/objective-z.org/blob/main/examples/thermostat.m" rel="noopener noreferrer">one example file</a> — not written by hand.</p>
+    <h2>One file, and the C it becomes</h2>
+    <p class="lede">Scroll the Objective-C on the left. The generated C keeps pace on the right, highlighting whatever you are looking at. Every line of it is the transpiler's own output for <a href="https://github.com/rodrigopex/objective-z.org/blob/main/examples/thermostat.m" rel="noopener noreferrer">this one file</a>.</p>
+  </div>
 
-    <div class="pair">
-      <div class="pair-head">
-        <h3>A block becomes a static C function</h3>
-        <span class="chip">passed to Zephyr as a plain function pointer</span>
-      </div>
-      <div class="split">
-        <div class="pane">
-          <p class="pane-head"><span>Objective-C</span></p>
-<pre><code>_poll = [[<span class="t">OZTimer</span> alloc]
-    initWithUserData:<span class="k">self</span>
-              expiry:^(<span class="k">struct</span> k_timer *t) {
-        <span class="t">Thermostat</span> *me =
-            (__bridge <span class="t">Thermostat</span> *)<span class="fn">k_timer_user_data_get</span>(t);
-        [me setHeating:[me shouldHeat]];
-    }
+  <div class="wrap wrap-tour">
+    <div class="tour" id="tour">
+      <div class="tour-code">
+        <p class="pane-head"><span>thermostat.m</span> <span class="pane-tag">you write</span></p>
+<pre><code><span class="g" data-step="1"><span class="c">/*
+ * Demo source for objective-z.org. Everything under generated/ is
+ * oz_transpile's own output for this file.
+ */</span>
+<span class="pp">#import</span> &lt;<span class="t">Foundation</span>/<span class="t">Foundation</span>.h&gt;
+
+<span class="pp">#include</span> &lt;zephyr/kernel.h&gt;
+<span class="pp">#include</span> &lt;zephyr/zbus/zbus.h&gt;
+
+<span class="k">struct</span> msg_setpoint {
+        <span class="k">int</span> celsius;
+};
+
+<span class="c">/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */</span>
+<span class="fn">ZBUS_CHAN_DEFINE</span>(chan_setpoint, <span class="k">struct</span> msg_setpoint, <span class="t">NULL</span>, <span class="t">NULL</span>,
+                 <span class="fn">ZBUS_OBSERVERS</span>(lis_setpoint), <span class="fn">ZBUS_MSG_INIT</span>(<span class="n">0</span>));
+</span>
+<span class="g" data-step="2">
+<span class="at">@protocol</span> <span class="t">Sensor</span>
+- (<span class="k">int</span>)read;
+<span class="at">@end</span>
+</span>
+<span class="g" data-step="3">
+<span class="at">@interface</span> <span class="t">Thermometer</span> : <span class="t">OZObject</span> &lt;<span class="t">Sensor</span>&gt; {
+        <span class="k">int</span> _offset;
+}
+- (<span class="k">int</span>)read;
+<span class="at">@end</span>
+
+<span class="at">@implementation</span> <span class="t">Thermometer</span>
+
+- (<span class="k">int</span>)read
+{
+        <span class="k">return</span> <span class="n">21</span> + _offset;
+}
+
+<span class="at">@end</span>
+</span>
+<span class="g" data-step="4">
+<span class="at">@interface</span> <span class="t">Hygrometer</span> : <span class="t">OZObject</span> &lt;<span class="t">Sensor</span>&gt; {
+        <span class="k">int</span> _humidity;
+}
+- (<span class="k">int</span>)read;
+<span class="at">@end</span>
+
+<span class="at">@implementation</span> <span class="t">Hygrometer</span>
+
+- (<span class="k">int</span>)read
+{
+        <span class="k">return</span> _humidity;
+}
+
+<span class="at">@end</span>
+</span>
+<span class="g" data-step="5">
+<span class="at">@interface</span> <span class="t">Thermostat</span> : <span class="t">OZObject</span> {
+        <span class="k">int</span> _setpoint;
+        <span class="t">BOOL</span> _heating;
+        <span class="t">Thermometer</span> *_probe;
+        <span class="t">OZArray</span> *_bank;
+        <span class="t">OZTimer</span> *_poll;
+}
+<span class="at">@property</span> (<span class="k">atomic</span>) <span class="k">int</span> setpoint;
+<span class="at">@property</span> (<span class="k">nonatomic</span>, getter=isHeating) <span class="t">BOOL</span> heating;
+
+- (<span class="k">instancetype</span>)initWithProbe:(<span class="t">Thermometer</span> *)probe pollEvery:(uint32_t)periodMs;
+- (<span class="k">int</span>)worstReading;
+- (<span class="k">int</span>)spotCheck;
+- (<span class="t">BOOL</span>)shouldHeat;
+<span class="at">@end</span>
+
+<span class="at">@implementation</span> <span class="t">Thermostat</span>
+
+<span class="at">@synthesize</span> setpoint = _setpoint;
+<span class="at">@synthesize</span> heating = _heating;</span>
+<span class="g" data-step="6"><span class="at">@synthesize</span> heating = _heating;
+
+- (<span class="k">instancetype</span>)initWithProbe:(<span class="t">Thermometer</span> *)probe pollEvery:(uint32_t)periodMs
+{
+        _probe = probe;
+        _bank = @[ probe, [[<span class="t">Hygrometer</span> alloc] init] ];
+
+        _poll = [[<span class="t">OZTimer</span> alloc]
+                initWithUserData:<span class="k">self</span>
+                expiry:^(<span class="k">struct</span> k_timer *t) {
+                        <span class="t">Thermostat</span> *me = (__bridge <span class="t">Thermostat</span> *)
+                                <span class="fn">k_timer_user_data_get</span>(t);
+                        [me setHeating:[me shouldHeat]];
+                }
                 stop:<span class="k">nil</span>];
+        [_poll startAfter:periodMs period:periodMs];
+        <span class="k">return</span> <span class="k">self</span>;
+}
+</span>
+<span class="g" data-step="7">
+- (<span class="k">int</span>)worstReading
+{
+        <span class="k">int</span> worst = <span class="n">0</span>;
 
-[_poll startAfter:periodMs period:periodMs];</code></pre>
+        <span class="k">for</span> (<span class="k">id</span> sensor in _bank) {
+                <span class="k">int</span> value = [sensor read];
+
+                <span class="k">if</span> (value &gt; worst) {
+                        worst = value;
+                }
+        }
+
+        <span class="k">return</span> worst;
+}
+</span>
+<span class="g" data-step="8">- (<span class="k">int</span>)spotCheck
+{
+        <span class="t">Thermometer</span> *spare = [[<span class="t">Thermometer</span> alloc] init];
+        <span class="k">int</span> reading = [spare read];
+
+        <span class="k">return</span> reading;
+}
+</span>
+<span class="g" data-step="9">- (<span class="t">BOOL</span>)shouldHeat
+{
+        <span class="k">return</span> [_probe read] &lt; _setpoint;
+}
+
+<span class="at">@end</span>
+</span>
+<span class="g" data-step="10"><span class="k">static</span> <span class="t">Thermostat</span> *unit;
+
+<span class="c">/* A plain C callback that talks to the object. */</span>
+<span class="k">static</span> <span class="k">void</span> <span class="fn">on_setpoint</span>(<span class="k">const</span> <span class="k">struct</span> zbus_channel *chan)
+{
+        <span class="k">const</span> <span class="k">struct</span> msg_setpoint *msg = <span class="fn">zbus_chan_const_msg</span>(chan);
+
+        [unit setSetpoint:msg-&gt;celsius];
+}
+
+<span class="fn">ZBUS_LISTENER_DEFINE</span>(lis_setpoint, on_setpoint);</span></code></pre>
+      </div>
+
+      <aside class="tour-panel">
+        <div class="tour-notes">
+<p class="tour-note" data-step="1"><b>1.</b> A Zephyr channel, declared in an Objective-C file. The macro is a C preprocessor construct that builds linker-section structures — and it comes out the other side byte for byte.</p>
+<p class="tour-note" data-step="2"><b>2.</b> A protocol first becomes a function-pointer type. Nothing is allocated and nothing is looked up yet.</p>
+<p class="tour-note" data-step="3"><b>3.</b> The class becomes a struct whose first member is its superclass, so an upcast is a pointer cast. The method becomes a function taking <code>self</code> explicitly.</p>
+<p class="tour-note" data-step="4"><b>4.</b> Now that two classes conform, the protocol gets a <code>const</code> table indexed by class id. It lives in <code>.rodata</code>, so it costs FLASH and no RAM at all.</p>
+<p class="tour-note" data-step="5"><b>5.</b> <code>atomic</code> wraps both accessors in a real Zephyr <code>k_spinlock</code> guard. <code>getter=isHeating</code> names the generated function; the setter keeps its conventional name.</p>
+<p class="tour-note" data-step="6"><b>6.</b> The array literal becomes a stack buffer of retained objects. The expiry block is lifted out as a file-scope function and handed to the timer by name — which is why only non-capturing blocks are allowed. <code>__bridge</code> is just a cast.</p>
+<p class="tour-note" data-step="7"><b>7.</b> Fast enumeration becomes an explicit iterator loop. Because <code>sensor</code> is <code>id</code>, the read goes through the protocol table — one indexed load, no message lookup. This is the polymorphic path.</p>
+<p class="tour-note" data-step="8"><b>8.</b> Nothing in this method mentions memory. ARC works out that <code>spare</code> dies at the closing brace and injects the release for you — before the return, at compile time. No collector, no runtime bookkeeping, and the exact instruction is right there to audit.</p>
+<p class="tour-note" data-step="9"><b>9.</b> Here the receiver type is known, so the send collapses to a direct call. And the <code>dealloc</code> you never wrote releases every strong ivar.</p>
+<p class="tour-note" data-step="10"><b>10.</b> A plain C callback can talk to objects. Only the message send is rewritten; the listener macro and the function signature are untouched.</p>
         </div>
-        <div class="pane">
-          <p class="pane-head"><span>generated C</span></p>
-<pre><code><span class="k">static</span> <span class="k">void</span> <span class="fn">_oz_block_L0_C0</span>(<span class="k">struct</span> k_timer * t)
+        <div class="pane tour-out">
+          <p class="pane-head"><span>generated C</span> <span class="pane-tag" id="tour-file">thermostat_ozm.c</span></p>
+<pre><code><span class="g" data-step="1" data-file="thermostat_ozm.c"><span class="k">struct</span> msg_setpoint {
+        <span class="k">int</span> celsius;
+}
+;
+<span class="c">/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */</span>
+<span class="fn">ZBUS_CHAN_DEFINE</span>(chan_setpoint, <span class="k">struct</span> msg_setpoint,
+                 <span class="t">NULL</span>, <span class="t">NULL</span>,
+                 <span class="fn">ZBUS_OBSERVERS</span>(lis_setpoint),
+                 <span class="fn">ZBUS_MSG_INIT</span>(<span class="n">0</span>));</span>
+<span class="g" data-step="2" data-file="oz_dispatch.h"><span class="k">typedef</span> <span class="k">int</span> (*<span class="t">OZ_fn_read</span>)(<span class="k">struct</span> <span class="t">OZObject</span> *);</span>
+<span class="g" data-step="3" data-file="thermostat_ozh.h · thermostat_ozm.c"><span class="k">struct</span> <span class="t">Thermometer</span> {
+    <span class="k">struct</span> <span class="t">OZObject</span> base;
+    <span class="k">int</span> _offset;
+};
+
+
+<span class="k">int</span> <span class="fn">Thermometer_read</span>(<span class="k">struct</span> <span class="t">Thermometer</span> *<span class="k">self</span>)
+{
+    <span class="k">return</span> <span class="n">21</span> + <span class="k">self</span>-&gt;_offset;
+}</span>
+<span class="g" data-step="4" data-file="oz_dispatch.c · thermostat_ozm.c"><span class="k">const</span> <span class="t">OZ_fn_read</span> <span class="t">OZ_PROTOCOL_RESOLVE_read</span>[<span class="t">OZ_CLASS_COUNT</span>] = {
+    [<span class="t">OZ_CLASS_Hygrometer</span>] = (<span class="t">OZ_fn_read</span>)<span class="t">Hygrometer_read</span>,
+    [<span class="t">OZ_CLASS_Thermometer</span>] = (<span class="t">OZ_fn_read</span>)<span class="t">Thermometer_read</span>,
+};
+
+<span class="k">int</span> <span class="fn">Hygrometer_read</span>(<span class="k">struct</span> <span class="t">Hygrometer</span> *<span class="k">self</span>)
+{
+    <span class="k">return</span> <span class="k">self</span>-&gt;_humidity;
+}</span>
+<span class="g" data-step="5" data-file="thermostat_ozh.h · thermostat_ozm.c"><span class="k">struct</span> <span class="t">Thermostat</span> {
+    <span class="k">struct</span> <span class="t">OZObject</span> base;
+    <span class="k">int</span> _setpoint;
+    <span class="k">bool</span> _heating;
+    <span class="k">struct</span> <span class="t">Thermometer</span> * _probe;
+    <span class="k">struct</span> <span class="t">OZArray</span> * _bank;
+    <span class="k">struct</span> <span class="t">OZTimer</span> * _poll;
+};
+
+<span class="k">int</span> <span class="fn">Thermostat_setpoint</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+{
+    <span class="k">int</span> val = {<span class="n">0</span>};
+    <span class="fn">OZ_SPINLOCK</span>(&amp;<span class="k">self</span>-&gt;base._oz_prop_lock) {
+        val = <span class="k">self</span>-&gt;_setpoint;
+    }
+    <span class="k">return</span> val;
+}
+
+<span class="k">void</span> <span class="fn">Thermostat_setSetpoint_</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>, <span class="k">int</span> setpoint)
+{
+    <span class="fn">OZ_SPINLOCK</span>(&amp;<span class="k">self</span>-&gt;base._oz_prop_lock) {
+        <span class="k">self</span>-&gt;_setpoint = setpoint;
+    }
+}
+
+<span class="t">BOOL</span> <span class="fn">Thermostat_isHeating</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+{
+    <span class="k">return</span> <span class="k">self</span>-&gt;_heating;
+}</span>
+<span class="g" data-step="6" data-file="thermostat_ozm.c"><span class="k">static</span> <span class="k">void</span> <span class="fn">_oz_block_L0_C0</span>(<span class="k">struct</span> k_timer * t)
 {
     <span class="k">struct</span> <span class="t">Thermostat</span> * me =
         (<span class="k">struct</span> <span class="t">Thermostat</span> *)<span class="fn">k_timer_user_data_get</span>(t);
     <span class="fn">Thermostat_setHeating_</span>(me, <span class="fn">Thermostat_shouldHeat</span>(me));
 }
 
-<span class="k">struct</span> <span class="t">OZTimer</span> *_oz_recv0 =
-    <span class="fn">OZTimer_initWithUserData_expiry_stop_</span>(
-        <span class="fn">OZTimer_alloc</span>(), (<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>,
-        _oz_block_L0_C0, (((<span class="k">void</span> *)<span class="n">0</span>)));
-
-<span class="fn">OZTimer_startAfter_period_</span>(<span class="k">self</span>-&gt;_poll,
-                           periodMs, periodMs);</code></pre>
-        </div>
-      </div>
-      <p class="pair-note">The block is lifted out as a file-scope function and handed to <code>OZTimer</code> by name. <code>__bridge</code> becomes an ordinary cast — borrowed, never retained. Only non-capturing blocks are allowed, which is what makes the lifting possible.</p>
-    </div>
-
-    <div class="pair">
-      <div class="pair-head">
-        <h3>Zephyr macros pass straight through</h3>
-        <span class="chip">zero bindings — byte-for-byte identical</span>
-      </div>
-      <div class="split">
-        <div class="pane">
-          <p class="pane-head"><span>Objective-C</span></p>
-<pre><code><span class="fn">ZBUS_CHAN_DEFINE</span>(chan_setpoint, <span class="k">struct</span> msg_setpoint,
-                 <span class="t">NULL</span>, <span class="t">NULL</span>,
-                 <span class="fn">ZBUS_OBSERVERS</span>(lis_setpoint),
-                 <span class="fn">ZBUS_MSG_INIT</span>(<span class="n">0</span>));
-
-<span class="k">static</span> <span class="k">void</span> <span class="fn">on_setpoint</span>(<span class="k">const</span> <span class="k">struct</span> zbus_channel *chan)
+    <span class="k">struct</span> <span class="t">OZObject</span> *_oz_arr_0_buf[] = {
+        (<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">OZObject_retain</span>(
+            (<span class="k">struct</span> <span class="t">OZObject</span> *)(<span class="k">struct</span> <span class="t">OZObject</span> *)probe),
+        (<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">OZObject_retain</span>(
+            (<span class="k">struct</span> <span class="t">OZObject</span> *)(<span class="k">struct</span> <span class="t">OZObject</span> *)
+            (<span class="k">struct</span> <span class="t">Hygrometer</span> *)<span class="fn">OZObject_init</span>(
+                (<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">Hygrometer_alloc</span>()))};
+    <span class="k">struct</span> <span class="t">OZArray</span> *_oz_recv1 =
+        <span class="fn">OZArray_initWithItems</span>(_oz_arr_0_buf, <span class="n">2</span>);
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_bank);
+    <span class="k">self</span>-&gt;_bank = _oz_recv1;
+    <span class="k">struct</span> <span class="t">OZTimer</span> *_oz_recv2 =
+        <span class="fn">OZTimer_initWithUserData_expiry_stop_</span>(
+            <span class="fn">OZTimer_alloc</span>(), (<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>,
+            _oz_block_L0_C0, (((<span class="k">void</span> *)<span class="n">0</span>)));
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_poll);
+    <span class="k">self</span>-&gt;_poll = _oz_recv2;
+    <span class="fn">OZTimer_startAfter_period_</span>(<span class="k">self</span>-&gt;_poll,
+                               periodMs, periodMs);</span>
+<span class="g" data-step="7" data-file="thermostat_ozm.c · oz_dispatch.h"><span class="k">int</span> <span class="fn">Thermostat_worstReading</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
 {
-    <span class="k">const</span> <span class="k">struct</span> msg_setpoint *msg =
-        <span class="fn">zbus_chan_const_msg</span>(chan);
-
-    [unit setSetpoint:msg-&gt;celsius];
+    <span class="k">int</span> worst = <span class="n">0</span>;
+    {
+        <span class="k">struct</span> <span class="t">OZObject</span> *_oz_iter0 = (<span class="k">struct</span> <span class="t">OZObject</span> *)
+            <span class="fn">OZ_PROTOCOL_SEND_iter</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_bank);
+        <span class="k">struct</span> <span class="t">OZObject</span> *_oz_recv1 = _oz_iter0;
+        <span class="k">for</span> (<span class="k">const</span>  <span class="k">id</span> sensor =
+                 (<span class="k">const</span>  <span class="k">id</span>)<span class="fn">OZ_PROTOCOL_SEND_next</span>(_oz_recv1);
+             sensor != ((<span class="k">void</span> *)<span class="n">0</span>);
+             sensor = (<span class="k">const</span>  <span class="k">id</span>)<span class="fn">OZ_PROTOCOL_SEND_next</span>(_oz_recv1)) {
+            <span class="k">struct</span> <span class="t">OZObject</span> *_oz_recv2 = (<span class="k">struct</span> <span class="t">OZObject</span> *)sensor;
+            <span class="k">int</span> value = <span class="fn">OZ_PROTOCOL_SEND_read</span>(_oz_recv2);
+            <span class="k">if</span> (value &gt; worst) {
+                worst = value;
+            }
+        }
+    }
+    <span class="k">return</span> worst;
 }
 
-<span class="fn">ZBUS_LISTENER_DEFINE</span>(lis_setpoint, on_setpoint);</code></pre>
-        </div>
-        <div class="pane">
-          <p class="pane-head"><span>generated C</span></p>
-<pre><code><span class="fn">ZBUS_CHAN_DEFINE</span>(chan_setpoint, <span class="k">struct</span> msg_setpoint,
-                 <span class="t">NULL</span>, <span class="t">NULL</span>,
-                 <span class="fn">ZBUS_OBSERVERS</span>(lis_setpoint),
-                 <span class="fn">ZBUS_MSG_INIT</span>(<span class="n">0</span>));
+<span class="pp">#define</span> <span class="fn">OZ_PROTOCOL_SEND_read</span>(obj)                       \
+    <span class="t">OZ_PROTOCOL_RESOLVE_read</span>[                            \
+        ((<span class="k">struct</span> <span class="t">OZObject</span> *)(obj))-&gt;_meta.class_id](     \
+            (<span class="k">struct</span> <span class="t">OZObject</span> *)(obj))</span>
+<span class="g" data-step="8" data-file="thermostat_ozm.c"><span class="k">int</span> <span class="fn">Thermostat_spotCheck</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+{
+    <span class="k">struct</span> <span class="t">Thermometer</span> * spare = (<span class="k">struct</span> <span class="t">Thermometer</span> *)
+        <span class="fn">OZObject_init</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">Thermometer_alloc</span>());
+    <span class="k">int</span> reading = <span class="fn">Thermometer_read</span>(spare);
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)spare);
+    <span class="k">return</span> reading;
+}</span>
+<span class="g" data-step="9" data-file="thermostat_ozm.c"><span class="t">BOOL</span> <span class="fn">Thermostat_shouldHeat</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+{
+    <span class="k">return</span> <span class="fn">Thermometer_read</span>(<span class="k">self</span>-&gt;_probe) &lt; <span class="k">self</span>-&gt;_setpoint;
+}
 
+<span class="k">void</span> <span class="fn">Thermostat_dealloc</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+{
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_probe);
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_bank);
+    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_poll);
+    <span class="fn">OZObject_dealloc</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>);
+}</span>
+<span class="g" data-step="10" data-file="thermostat_ozm.c"><span class="k">static</span> <span class="k">struct</span> <span class="t">Thermostat</span> * unit;
+<span class="c">/* A plain C callback that talks to the object. */</span>
 <span class="k">static</span> <span class="k">void</span> <span class="fn">on_setpoint</span>(<span class="k">const</span> <span class="k">struct</span> zbus_channel * chan)
 {
-    <span class="k">const</span> <span class="k">struct</span> msg_setpoint * msg =
-        <span class="fn">zbus_chan_const_msg</span>(chan);
+    <span class="k">const</span> <span class="k">struct</span> msg_setpoint * msg = <span class="fn">zbus_chan_const_msg</span>(chan);
     <span class="fn">Thermostat_setSetpoint_</span>(unit, msg-&gt;celsius);
 }
 
-<span class="fn">ZBUS_LISTENER_DEFINE</span>(lis_setpoint, on_setpoint);</code></pre>
+<span class="fn">ZBUS_LISTENER_DEFINE</span>(lis_setpoint, on_setpoint);</span></code></pre>
         </div>
-      </div>
-      <p class="pair-note">This is the part no other language gets for free. <code>ZBUS_CHAN_DEFINE</code> and <code>ZBUS_LISTENER_DEFINE</code> are C preprocessor macros that build linker-section structures; here they sit in a <code>.m</code> file untouched, and come out untouched. A plain C callback can send messages to objects, and only that line changes. Note that a zbus listener callback is a C function pointer, so it must be a function — a block cannot go there.</p>
+      </aside>
     </div>
+  </div>
 
-    <div class="pair">
-      <div class="pair-head">
-        <h3>A message send becomes a direct call</h3>
-        <span class="chip">12 cycles — identical to a C function call</span>
-      </div>
-      <div class="split">
-        <div class="pane">
-          <p class="pane-head"><span>Objective-C</span></p>
-<pre><code>- (<span class="t">BOOL</span>)shouldHeat
-{
-    <span class="k">return</span> [_probe read] &lt; _setpoint;
-}</code></pre>
-        </div>
-        <div class="pane">
-          <p class="pane-head"><span>generated C</span></p>
-<pre><code><span class="t">BOOL</span> <span class="fn">Thermostat_shouldHeat</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
-{
-    <span class="k">return</span> <span class="fn">Thermometer_read</span>(<span class="k">self</span>-&gt;_probe) &lt; <span class="k">self</span>-&gt;_setpoint;
-}</code></pre>
-        </div>
-      </div>
-      <p class="pair-note">The receiver type is known at transpile time, so the send resolves to a direct call. Nothing is looked up at runtime.</p>
-    </div>
-
-    <div class="pair">
-      <div class="pair-head">
-        <h3>A protocol becomes a <code>const</code> table in FLASH</h3>
-        <span class="chip">zero RAM — lives in <code>.rodata</code></span>
-      </div>
-      <div class="split">
-        <div class="pane">
-          <p class="pane-head"><span>Objective-C</span></p>
-<pre><code><span class="at">@protocol</span> <span class="t">Sensor</span>
-- (<span class="k">int</span>)read;
-<span class="at">@end</span>
-
-<span class="at">@interface</span> <span class="t">Thermometer</span> : <span class="t">OZObject</span> &lt;<span class="t">Sensor</span>&gt;
-<span class="at">@interface</span> <span class="t">Hygrometer</span>  : <span class="t">OZObject</span> &lt;<span class="t">Sensor</span>&gt;</code></pre>
-        </div>
-        <div class="pane">
-          <p class="pane-head"><span>generated C</span></p>
-<pre><code><span class="k">typedef</span> <span class="k">int</span> (*<span class="t">OZ_fn_read</span>)(<span class="k">struct</span> <span class="t">OZObject</span> *);
-
-<span class="k">const</span> <span class="t">OZ_fn_read</span> <span class="t">OZ_PROTOCOL_RESOLVE_read</span>[<span class="t">OZ_CLASS_COUNT</span>] = {
-    [<span class="t">OZ_CLASS_Hygrometer</span>] = (<span class="t">OZ_fn_read</span>)<span class="t">Hygrometer_read</span>,
-    [<span class="t">OZ_CLASS_Thermometer</span>] = (<span class="t">OZ_fn_read</span>)<span class="t">Thermometer_read</span>,
-};</code></pre>
-        </div>
-      </div>
-      <p class="pair-note">Only truly polymorphic <code>id</code>-typed receivers pay for this table, and it costs no RAM because it is <code>const</code>.</p>
-    </div>
-
-    <div class="pair">
-      <div class="pair-head">
-        <h3>ARC writes the cleanup you didn't</h3>
-        <span class="chip">no manual retain / release, no GC</span>
-      </div>
-      <div class="split">
-        <div class="pane">
-          <p class="pane-head"><span>Objective-C</span></p>
-<pre><code><span class="at">@interface</span> <span class="t">Thermostat</span> : <span class="t">OZObject</span> {
-    <span class="t">Thermometer</span> *_probe;   <span class="c">/* strong */</span>
-    <span class="t">OZTimer</span> *_poll;        <span class="c">/* strong */</span>
-}
-<span class="at">@end</span>
-
-<span class="c">/* no -dealloc written */</span></code></pre>
-        </div>
-        <div class="pane">
-          <p class="pane-head"><span>generated C</span></p>
-<pre><code><span class="k">void</span> <span class="fn">Thermostat_dealloc</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
-{
-    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_probe);
-    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_poll);
-    <span class="fn">OZObject_dealloc</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>);
-}</code></pre>
-        </div>
-      </div>
-      <p class="pair-note">Retain and release land at compile time, at scope boundaries. There is no collector and no runtime bookkeeping.</p>
-    </div>
-
+  <div class="wrap">
     <details>
       <summary>Where objects come from <span class="hint">static slab pools, no <code>malloc</code></span></summary>
       <div class="details-body">

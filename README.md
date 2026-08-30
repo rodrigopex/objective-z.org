@@ -12,8 +12,11 @@ index.html            the whole site — one page, anchor navigation
 404.html              not-found page, same shell
 css/main.css          design tokens, layout, components
 js/theme.js           theme toggle + narrow-screen nav (the only script)
+js/tour.js            scroll-linked code tour (activates above 62rem only)
 tools/highlight.py    authoring tool: bakes syntax-highlight spans into the
                       markup (never runs in the browser)
+tools/gen_tour.py     authoring tool: slices the tour's code groups out of
+                      examples/ so both columns stay verbatim
 examples/             the demo .m and its real generated C, plus the command
                       that produced them — the code shown on the page
 assets/               Citrinio logo pair, social card (+ its SVG source)
@@ -23,10 +26,14 @@ CNAME                 objective-z.org
 ```
 
 The page leads with a source/result split — Objective-C on the left, the
-transpiler's actual output on the right — then one such pair per language
-feature. Long-form material (full benchmark tables, the alternative-language
-evaluations, limitations) sits in closed `<details>` blocks so the page stays
-short for a first-time reader.
+transpiler's actual output on the right — and then walks one complete example
+file top to bottom: as you scroll the Objective-C, the generated C stays pinned
+beside it with the matching region highlighted. Long-form material (full
+benchmark tables, the alternative-language evaluations, limitations) sits in
+closed `<details>` blocks so the page stays short for a first-time reader.
+
+The tour needs no framework: `position: sticky` plus one `IntersectionObserver`,
+and it degrades to a plain listing with JS off or on a narrow screen.
 
 ## Local preview
 

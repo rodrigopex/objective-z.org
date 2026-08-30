@@ -1,9 +1,8 @@
 /*
- * Demo source for objective-z.org. Everything in generated/ is oz_transpile's
- * own output for this file.
+ * Demo source for objective-z.org. Everything under generated/ is
+ * oz_transpile's own output for this file.
  */
-#import <Foundation/OZObject.h>
-#import <Foundation/OZTimer.h>
+#import <Foundation/Foundation.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/zbus/zbus.h>
@@ -54,12 +53,15 @@ ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
         int _setpoint;
         BOOL _heating;
         Thermometer *_probe;
+        OZArray *_bank;
         OZTimer *_poll;
 }
 @property (atomic) int setpoint;
 @property (nonatomic, getter=isHeating) BOOL heating;
 
 - (instancetype)initWithProbe:(Thermometer *)probe pollEvery:(uint32_t)periodMs;
+- (int)worstReading;
+- (int)spotCheck;
 - (BOOL)shouldHeat;
 @end
 
@@ -71,16 +73,41 @@ ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
 - (instancetype)initWithProbe:(Thermometer *)probe pollEvery:(uint32_t)periodMs
 {
         _probe = probe;
+        _bank = @[ probe, [[Hygrometer alloc] init] ];
+
         _poll = [[OZTimer alloc]
                 initWithUserData:self
-                          expiry:^(struct k_timer *t) {
-                                  Thermostat *me =
-                                          (__bridge Thermostat *)k_timer_user_data_get(t);
-                                  [me setHeating:[me shouldHeat]];
-                          }
-                            stop:nil];
+                expiry:^(struct k_timer *t) {
+                        Thermostat *me = (__bridge Thermostat *)
+                                k_timer_user_data_get(t);
+                        [me setHeating:[me shouldHeat]];
+                }
+                stop:nil];
         [_poll startAfter:periodMs period:periodMs];
         return self;
+}
+
+- (int)worstReading
+{
+        int worst = 0;
+
+        for (id sensor in _bank) {
+                int value = [sensor read];
+
+                if (value > worst) {
+                        worst = value;
+                }
+        }
+
+        return worst;
+}
+
+- (int)spotCheck
+{
+        Thermometer *spare = [[Thermometer alloc] init];
+        int reading = [spare read];
+
+        return reading;
 }
 
 - (BOOL)shouldHeat

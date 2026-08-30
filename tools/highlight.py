@@ -40,7 +40,11 @@ TOKEN_RE = re.compile(
 )
 
 BLOCK_RE = re.compile(r"(<pre><code>)(.*?)(</code></pre>)", re.DOTALL)
-SPAN_RE = re.compile(r'</?span(?: class="(?:k|t|fn|c|s|pp|at|n)")?>')
+# Matches a token span together with its closing tag. Token spans never nest
+# and never contain markup, so [^<]* is exact -- and this leaves any wrapper
+# span (e.g. the tour's class="g") untouched when stripping.
+SPAN_RE = re.compile(r'<span class="(?:k|t|fn|c|s|pp|at|n)">([^<]*)</span>')
+TOKEN_SPAN_RE = re.compile(r'<span class="(?:k|t|fn|c|s|pp|at|n)">')
 
 
 def classify(name, rest):
@@ -55,7 +59,8 @@ def classify(name, rest):
     return None
 
 
-def highlight(code):
+def highlight_text(code):
+    """Tokenize a run of plain (unescaped) code text into escaped HTML."""
     out = []
     pos = 0
     for m in TOKEN_RE.finditer(code):
@@ -74,6 +79,19 @@ def highlight(code):
     return "".join(out)
 
 
+def highlight(body):
+    """Highlight a code block, passing any markup already in it through.
+
+    The code tour wraps line groups in <span class="g" data-step="N">; those
+    tags must survive tokenizing, so text runs are highlighted individually
+    and every tag is copied verbatim.
+    """
+    out = []
+    for tag, text in re.findall(r"(<[^>]+>)|([^<]+)", body):
+        out.append(tag if tag else highlight_text(html.unescape(text)))
+    return "".join(out)
+
+
 def process(path, force=False):
     src = open(path, encoding="utf-8").read()
     touched = skipped = 0
@@ -81,13 +99,13 @@ def process(path, force=False):
     def repl(m):
         nonlocal touched, skipped
         open_tag, body, close_tag = m.groups()
-        if "<span" in body:
+        if TOKEN_SPAN_RE.search(body):
             if not force:
                 skipped += 1
                 return m.group()
-            body = SPAN_RE.sub("", body)
+            body = SPAN_RE.sub(r"\1", body)
         touched += 1
-        return open_tag + highlight(html.unescape(body)) + close_tag
+        return open_tag + highlight(body) + close_tag
 
     out = BLOCK_RE.sub(repl, src)
     if out != src:

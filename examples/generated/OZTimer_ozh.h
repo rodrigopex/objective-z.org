@@ -5,6 +5,8 @@
 #include "oz_dispatch.h"
 #include <string.h>
 #include "OZObject_ozh.h"
+#include <zephyr/kernel.h>
+
 
 struct OZTimer {
 	struct OZObject base;
@@ -14,6 +16,10 @@ struct OZTimer {
 	struct OZObject * _userdata;
 };
 
+struct OZTimer * OZTimer_initWithUserData_expiry_stop_(struct OZTimer *self, struct OZObject * userData, void (*expBlock)(struct k_timer *), void (*stopBlock)(struct k_timer *));
+void OZTimer_startAfter_period_(struct OZTimer *self, uint32_t delayMs, uint32_t periodMs);
+void OZTimer_stop(struct OZTimer *self);
+struct OZObject * OZTimer_userdata(struct OZTimer *self);
 void OZTimer_dealloc(struct OZTimer *self);
 
 extern oz_slab_t oz_slab_OZTimer;

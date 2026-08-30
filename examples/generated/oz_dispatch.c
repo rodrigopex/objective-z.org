@@ -2,11 +2,27 @@
 #include "oz_dispatch.h"
 #include "OZObject_ozh.h"
 #include "thermostat_ozh.h"
+#include "OZArray_ozh.h"
+#include "OZDefer_ozh.h"
+#include "OZDictionary_ozh.h"
+#include "OZHeap_ozh.h"
+#include "OZString_ozh.h"
+#include "OZMutableString_ozh.h"
+#include "OZQ31_ozh.h"
+#include "OZSpinLock_ozh.h"
 #include "OZTimer_ozh.h"
 
 const char *const oz_class_names[OZ_CLASS_COUNT] = {
 	[OZ_CLASS_OZObject] = "OZObject",
 	[OZ_CLASS_Hygrometer] = "Hygrometer",
+	[OZ_CLASS_OZArray] = "OZArray",
+	[OZ_CLASS_OZDefer] = "OZDefer",
+	[OZ_CLASS_OZDictionary] = "OZDictionary",
+	[OZ_CLASS_OZHeap] = "OZHeap",
+	[OZ_CLASS_OZString] = "OZString",
+	[OZ_CLASS_OZMutableString] = "OZMutableString",
+	[OZ_CLASS_OZQ31] = "OZQ31",
+	[OZ_CLASS_OZSpinLock] = "OZSpinLock",
 	[OZ_CLASS_OZTimer] = "OZTimer",
 	[OZ_CLASS_Thermometer] = "Thermometer",
 	[OZ_CLASS_Thermostat] = "Thermostat",
@@ -15,9 +31,101 @@ const char *const oz_class_names[OZ_CLASS_COUNT] = {
 const uint8_t oz_superclass_id[OZ_CLASS_COUNT] = {
 	[OZ_CLASS_OZObject] = OZ_CLASS_COUNT,
 	[OZ_CLASS_Hygrometer] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZArray] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZDefer] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZDictionary] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZHeap] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZString] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZMutableString] = OZ_CLASS_OZString,
+	[OZ_CLASS_OZQ31] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZSpinLock] = OZ_CLASS_OZObject,
 	[OZ_CLASS_OZTimer] = OZ_CLASS_OZObject,
 	[OZ_CLASS_Thermometer] = OZ_CLASS_OZObject,
 	[OZ_CLASS_Thermostat] = OZ_CLASS_OZObject,
+};
+
+const OZ_fn_cDescription_maxLength_ OZ_PROTOCOL_RESOLVE_cDescription_maxLength_[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZObject] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_Hygrometer] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_OZArray] = (OZ_fn_cDescription_maxLength_)OZArray_cDescription_maxLength_,
+	[OZ_CLASS_OZDefer] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_cDescription_maxLength_)OZDictionary_cDescription_maxLength_,
+	[OZ_CLASS_OZHeap] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_OZString] = (OZ_fn_cDescription_maxLength_)OZString_cDescription_maxLength_,
+	[OZ_CLASS_OZMutableString] = (OZ_fn_cDescription_maxLength_)OZString_cDescription_maxLength_,
+	[OZ_CLASS_OZQ31] = (OZ_fn_cDescription_maxLength_)OZQ31_cDescription_maxLength_,
+	[OZ_CLASS_OZSpinLock] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_OZTimer] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_Thermometer] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+	[OZ_CLASS_Thermostat] = (OZ_fn_cDescription_maxLength_)OZObject_cDescription_maxLength_,
+};
+
+const OZ_fn_count OZ_PROTOCOL_RESOLVE_count[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZArray] = (OZ_fn_count)OZArray_count,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_count)OZDictionary_count,
+};
+
+const OZ_fn_dealloc OZ_PROTOCOL_RESOLVE_dealloc[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZObject] = (OZ_fn_dealloc)OZObject_dealloc,
+	[OZ_CLASS_Hygrometer] = (OZ_fn_dealloc)Hygrometer_dealloc,
+	[OZ_CLASS_OZArray] = (OZ_fn_dealloc)OZArray_dealloc,
+	[OZ_CLASS_OZDefer] = (OZ_fn_dealloc)OZDefer_dealloc,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_dealloc)OZDictionary_dealloc,
+	[OZ_CLASS_OZHeap] = (OZ_fn_dealloc)OZHeap_dealloc,
+	[OZ_CLASS_OZString] = (OZ_fn_dealloc)OZString_dealloc,
+	[OZ_CLASS_OZMutableString] = (OZ_fn_dealloc)OZMutableString_dealloc,
+	[OZ_CLASS_OZQ31] = (OZ_fn_dealloc)OZQ31_dealloc,
+	[OZ_CLASS_OZSpinLock] = (OZ_fn_dealloc)OZSpinLock_dealloc,
+	[OZ_CLASS_OZTimer] = (OZ_fn_dealloc)OZTimer_dealloc,
+	[OZ_CLASS_Thermometer] = (OZ_fn_dealloc)Thermometer_dealloc,
+	[OZ_CLASS_Thermostat] = (OZ_fn_dealloc)Thermostat_dealloc,
+};
+
+const OZ_fn_init OZ_PROTOCOL_RESOLVE_init[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZObject] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_Hygrometer] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZArray] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZDefer] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZHeap] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZString] = (OZ_fn_init)OZString_init,
+	[OZ_CLASS_OZMutableString] = (OZ_fn_init)OZString_init,
+	[OZ_CLASS_OZQ31] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZSpinLock] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_OZTimer] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_Thermometer] = (OZ_fn_init)OZObject_init,
+	[OZ_CLASS_Thermostat] = (OZ_fn_init)OZObject_init,
+};
+
+const OZ_fn_isEqual_ OZ_PROTOCOL_RESOLVE_isEqual_[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZObject] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_Hygrometer] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZArray] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZDefer] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZHeap] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZString] = (OZ_fn_isEqual_)OZString_isEqual_,
+	[OZ_CLASS_OZMutableString] = (OZ_fn_isEqual_)OZString_isEqual_,
+	[OZ_CLASS_OZQ31] = (OZ_fn_isEqual_)OZQ31_isEqual_,
+	[OZ_CLASS_OZSpinLock] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_OZTimer] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_Thermometer] = (OZ_fn_isEqual_)OZObject_isEqual_,
+	[OZ_CLASS_Thermostat] = (OZ_fn_isEqual_)OZObject_isEqual_,
+};
+
+const OZ_fn_iter OZ_PROTOCOL_RESOLVE_iter[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZArray] = (OZ_fn_iter)OZArray_iter,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_iter)OZDictionary_iter,
+};
+
+const OZ_fn_iterIdx OZ_PROTOCOL_RESOLVE_iterIdx[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZArray] = (OZ_fn_iterIdx)OZArray_iterIdx,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_iterIdx)OZDictionary_iterIdx,
+};
+
+const OZ_fn_next OZ_PROTOCOL_RESOLVE_next[OZ_CLASS_COUNT] = {
+	[OZ_CLASS_OZArray] = (OZ_fn_next)OZArray_next,
+	[OZ_CLASS_OZDictionary] = (OZ_fn_next)OZDictionary_next,
 };
 
 const OZ_fn_read OZ_PROTOCOL_RESOLVE_read[OZ_CLASS_COUNT] = {
@@ -34,9 +142,19 @@ void OZObject_dispatch_free(struct OZObject *obj)
 	switch (obj->_meta.class_id) {
 	case OZ_CLASS_OZObject: OZObject_free((struct OZObject *)obj); break;
 	case OZ_CLASS_Hygrometer: Hygrometer_free((struct Hygrometer *)obj); break;
+	case OZ_CLASS_OZArray: OZArray_free((struct OZArray *)obj); break;
+	case OZ_CLASS_OZDefer: OZDefer_free((struct OZDefer *)obj); break;
+	case OZ_CLASS_OZDictionary: OZDictionary_free((struct OZDictionary *)obj); break;
+	case OZ_CLASS_OZHeap: OZHeap_free((struct OZHeap *)obj); break;
+	case OZ_CLASS_OZString: OZString_free((struct OZString *)obj); break;
+	case OZ_CLASS_OZMutableString: OZMutableString_free((struct OZMutableString *)obj); break;
+	case OZ_CLASS_OZQ31: OZQ31_free((struct OZQ31 *)obj); break;
+	case OZ_CLASS_OZSpinLock: OZSpinLock_free((struct OZSpinLock *)obj); break;
 	case OZ_CLASS_OZTimer: OZTimer_free((struct OZTimer *)obj); break;
 	case OZ_CLASS_Thermometer: Thermometer_free((struct Thermometer *)obj); break;
 	case OZ_CLASS_Thermostat: Thermostat_free((struct Thermostat *)obj); break;
 	default: break;
 	}
 }
+
+OZ_MEM_BLOCKS_DEFINE(oz_item_pool, sizeof(struct OZObject *), 2, 4);

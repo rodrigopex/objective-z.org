@@ -716,6 +716,152 @@ pre code .pp {
   display: block;
 }
 
+/* ------------------------------------------------------------ code tour ---
+   Left: the whole example file. Right: the generated C, pinned, with the
+   region matching whatever the reader is looking at lit up.
+
+   Everything interactive is gated on BOTH a min-width and [data-tour="on"],
+   which js/tour.js sets. With JS off, or on a narrow screen, this degrades to
+   a plain listing followed by the generated C and all the captions -- fully
+   legible, nothing dimmed.
+   -------------------------------------------------------------------------- */
+
+.wrap-tour {
+  max-width: 1400px;
+}
+
+.tour {
+  margin-top: 2rem;
+}
+
+.tour-code > pre,
+.tour-out > pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.795rem;
+  line-height: 1.55;
+}
+
+.tour-code {
+  background: var(--bg-code);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.tour-code > pre {
+  overflow-x: auto;
+  padding: 1rem 1.1rem;
+}
+
+.tour .g {
+  display: block;
+}
+
+.tour-notes {
+  margin-bottom: 1rem;
+}
+
+.tour-note {
+  font-size: 0.93rem;
+  color: var(--ink-muted);
+  margin: 0 0 0.8rem;
+  max-width: none;
+}
+
+.tour-note b {
+  color: var(--heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour-out {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.tour-out > pre {
+  padding: 1rem 1.1rem;
+  overflow: auto;
+}
+
+/* This tag holds a filename, which is case-sensitive -- do not upper-case it. */
+.tour-out .pane-tag {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media (min-width: 62rem) {
+  .tour {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: start;
+  }
+
+  .tour-panel {
+    position: sticky;
+    top: 4.25rem;
+  }
+
+  .tour-out {
+    margin-top: 0;
+  }
+
+  .tour-out > pre {
+    max-height: calc(100vh - 15rem);
+  }
+
+  /* Reserve caption height so switching steps does not shift the panel. */
+  .tour[data-tour="on"] .tour-notes {
+    min-height: 6.5rem;
+  }
+
+  .tour[data-tour="on"] .tour-note {
+    display: none;
+  }
+
+  .tour[data-tour="on"] .tour-note.is-active {
+    display: block;
+  }
+
+  /* Left: mark the active region without dimming anything -- this column is
+     what the reader is actually reading. */
+  .tour[data-tour="on"] .tour-code .g {
+    margin-left: -1.1rem;
+    padding-left: calc(1.1rem - 3px);
+    border-left: 3px solid transparent;
+  }
+
+  .tour[data-tour="on"] .tour-code .g.is-active {
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* Right: de-emphasise everything but the matching region. */
+  .tour[data-tour="on"] .tour-out .g {
+    opacity: 0.38;
+    transition: opacity 160ms ease;
+  }
+
+  .tour[data-tour="on"] .tour-out .g.is-active {
+    opacity: 1;
+  }
+
+  .tour[data-tour="on"] .tour-out .g + .g {
+    margin-top: 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour[data-tour="on"] .tour-out .g {
+    transition: none;
+  }
+}
+
 /* -------------------------------------------------- source / result split ---
    Two code panes side by side: what you write, and what the transpiler emits.
    Collapses to stacked panes before either pane gets too narrow to read.

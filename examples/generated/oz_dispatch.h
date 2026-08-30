@@ -3,10 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "platform/oz_platform.h"
 
 #ifndef BOOL
 #define BOOL _Bool
 #endif
+#include <string.h>
+
 #include <zephyr/kernel.h>
 
 #include <zephyr/zbus/zbus.h>
@@ -14,6 +17,14 @@
 
 struct OZObject;
 struct Hygrometer;
+struct OZArray;
+struct OZDefer;
+struct OZDictionary;
+struct OZHeap;
+struct OZString;
+struct OZMutableString;
+struct OZQ31;
+struct OZSpinLock;
 struct OZTimer;
 struct Thermometer;
 struct Thermostat;
@@ -23,10 +34,18 @@ typedef struct OZObject *id;
 enum oz_class_id_enum {
 	OZ_CLASS_OZObject = 0,
 	OZ_CLASS_Hygrometer = 1,
-	OZ_CLASS_OZTimer = 2,
-	OZ_CLASS_Thermometer = 3,
-	OZ_CLASS_Thermostat = 4,
-	OZ_CLASS_COUNT = 5
+	OZ_CLASS_OZArray = 2,
+	OZ_CLASS_OZDefer = 3,
+	OZ_CLASS_OZDictionary = 4,
+	OZ_CLASS_OZHeap = 5,
+	OZ_CLASS_OZString = 6,
+	OZ_CLASS_OZMutableString = 7,
+	OZ_CLASS_OZQ31 = 8,
+	OZ_CLASS_OZSpinLock = 9,
+	OZ_CLASS_OZTimer = 10,
+	OZ_CLASS_Thermometer = 11,
+	OZ_CLASS_Thermostat = 12,
+	OZ_CLASS_COUNT = 13
 };
 
 /* Class introspection tables */
@@ -56,9 +75,77 @@ static inline bool oz_isKindOfClass(uint8_t class_id, uint8_t target_class_id)
 }
 
 /* Protocol dispatch function pointer types */
+typedef int (*OZ_fn_cDescription_maxLength_)(struct OZObject *, char *, int);
+typedef unsigned int (*OZ_fn_count)(struct OZObject *);
+typedef void (*OZ_fn_dealloc)(struct OZObject *);
+typedef struct OZObject * (*OZ_fn_init)(struct OZObject *);
+typedef BOOL (*OZ_fn_isEqual_)(struct OZObject *, struct OZObject *);
+typedef struct OZObject * (*OZ_fn_iter)(struct OZObject *);
+typedef uint16_t (*OZ_fn_iterIdx)(struct OZObject *);
+typedef struct OZObject * (*OZ_fn_next)(struct OZObject *);
 typedef int (*OZ_fn_read)(struct OZObject *);
 
 /* Compile-time dispatch: OZ_IMPL macros map class x selector -> direct function */
+#define OZ_IMPL_OZObject_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Hygrometer_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_cDescription_maxLength_(self, ...)	OZArray_cDescription_maxLength_((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDefer_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_cDescription_maxLength_(self, ...)	OZDictionary_cDescription_maxLength_((struct OZDictionary *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZHeap_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZString_cDescription_maxLength_(self, ...)	OZString_cDescription_maxLength_((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZMutableString_cDescription_maxLength_(self, ...)	OZString_cDescription_maxLength_((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZQ31_cDescription_maxLength_(self, ...)	OZQ31_cDescription_maxLength_((struct OZQ31 *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZSpinLock_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZTimer_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermometer_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermostat_cDescription_maxLength_(self, ...)	OZObject_cDescription_maxLength_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_count(self, ...)	OZArray_count((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_count(self, ...)	OZDictionary_count((struct OZDictionary *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZObject_dealloc(self, ...)	OZObject_dealloc((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Hygrometer_dealloc(self, ...)	Hygrometer_dealloc((struct Hygrometer *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_dealloc(self, ...)	OZArray_dealloc((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDefer_dealloc(self, ...)	OZDefer_dealloc((struct OZDefer *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_dealloc(self, ...)	OZDictionary_dealloc((struct OZDictionary *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZHeap_dealloc(self, ...)	OZHeap_dealloc((struct OZHeap *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZString_dealloc(self, ...)	OZString_dealloc((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZMutableString_dealloc(self, ...)	OZMutableString_dealloc((struct OZMutableString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZQ31_dealloc(self, ...)	OZQ31_dealloc((struct OZQ31 *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZSpinLock_dealloc(self, ...)	OZSpinLock_dealloc((struct OZSpinLock *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZTimer_dealloc(self, ...)	OZTimer_dealloc((struct OZTimer *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermometer_dealloc(self, ...)	Thermometer_dealloc((struct Thermometer *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermostat_dealloc(self, ...)	Thermostat_dealloc((struct Thermostat *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZObject_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Hygrometer_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDefer_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZHeap_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZString_init(self, ...)	OZString_init((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZMutableString_init(self, ...)	OZString_init((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZQ31_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZSpinLock_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZTimer_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermometer_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermostat_init(self, ...)	OZObject_init((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZObject_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Hygrometer_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDefer_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZHeap_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZString_isEqual_(self, ...)	OZString_isEqual_((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZMutableString_isEqual_(self, ...)	OZString_isEqual_((struct OZString *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZQ31_isEqual_(self, ...)	OZQ31_isEqual_((struct OZQ31 *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZSpinLock_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZTimer_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermometer_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_Thermostat_isEqual_(self, ...)	OZObject_isEqual_((struct OZObject *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_iter(self, ...)	OZArray_iter((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_iter(self, ...)	OZDictionary_iter((struct OZDictionary *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_iterIdx(self, ...)	OZArray_iterIdx((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_iterIdx(self, ...)	OZDictionary_iterIdx((struct OZDictionary *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZArray_next(self, ...)	OZArray_next((struct OZArray *)(self), ##__VA_ARGS__)
+#define OZ_IMPL_OZDictionary_next(self, ...)	OZDictionary_next((struct OZDictionary *)(self), ##__VA_ARGS__)
 #define OZ_IMPL_Hygrometer_read(self, ...)	Hygrometer_read((struct Hygrometer *)(self), ##__VA_ARGS__)
 #define OZ_IMPL_Thermometer_read(self, ...)	Thermometer_read((struct Thermometer *)(self), ##__VA_ARGS__)
 
@@ -66,13 +153,31 @@ typedef int (*OZ_fn_read)(struct OZObject *);
 #define OZ_SEND(cls, sel, self, ...) OZ_IMPL_##cls##_##sel((self), ##__VA_ARGS__)
 
 /* Const protocol dispatch tables (indexed by _meta.class_id) */
+extern const OZ_fn_cDescription_maxLength_ OZ_PROTOCOL_RESOLVE_cDescription_maxLength_[OZ_CLASS_COUNT];
+extern const OZ_fn_count OZ_PROTOCOL_RESOLVE_count[OZ_CLASS_COUNT];
+extern const OZ_fn_dealloc OZ_PROTOCOL_RESOLVE_dealloc[OZ_CLASS_COUNT];
+extern const OZ_fn_init OZ_PROTOCOL_RESOLVE_init[OZ_CLASS_COUNT];
+extern const OZ_fn_isEqual_ OZ_PROTOCOL_RESOLVE_isEqual_[OZ_CLASS_COUNT];
+extern const OZ_fn_iter OZ_PROTOCOL_RESOLVE_iter[OZ_CLASS_COUNT];
+extern const OZ_fn_iterIdx OZ_PROTOCOL_RESOLVE_iterIdx[OZ_CLASS_COUNT];
+extern const OZ_fn_next OZ_PROTOCOL_RESOLVE_next[OZ_CLASS_COUNT];
 extern const OZ_fn_read OZ_PROTOCOL_RESOLVE_read[OZ_CLASS_COUNT];
 
 /* OZ_PROTOCOL_SEND macros — polymorphic fallback, caller must ensure obj has no side effects */
+#define OZ_PROTOCOL_SEND_cDescription_maxLength_(obj, buf, maxLen) OZ_PROTOCOL_RESOLVE_cDescription_maxLength_[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj), (buf), (maxLen))
+#define OZ_PROTOCOL_SEND_count(obj) OZ_PROTOCOL_RESOLVE_count[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
+#define OZ_PROTOCOL_SEND_dealloc(obj) OZ_PROTOCOL_RESOLVE_dealloc[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
+#define OZ_PROTOCOL_SEND_init(obj) OZ_PROTOCOL_RESOLVE_init[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
+#define OZ_PROTOCOL_SEND_isEqual_(obj, anObject) OZ_PROTOCOL_RESOLVE_isEqual_[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj), (anObject))
+#define OZ_PROTOCOL_SEND_iter(obj) OZ_PROTOCOL_RESOLVE_iter[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
+#define OZ_PROTOCOL_SEND_iterIdx(obj) OZ_PROTOCOL_RESOLVE_iterIdx[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
+#define OZ_PROTOCOL_SEND_next(obj) OZ_PROTOCOL_RESOLVE_next[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
 #define OZ_PROTOCOL_SEND_read(obj) OZ_PROTOCOL_RESOLVE_read[((struct OZObject *)(obj))->_meta.class_id]((struct OZObject *)(obj))
 
 
 void OZObject_dispatch_free(struct OZObject *obj);
+
+extern oz_mem_blocks_t oz_item_pool;
 
 /* OZLog — formatted logging with %@ object support */
 void OZLog(const char *fmt, ...);
