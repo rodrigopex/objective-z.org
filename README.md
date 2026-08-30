@@ -23,7 +23,7 @@ tools/check_examples.py
 examples/tour/        the demonstrated .m and its real generated C
 assets/               Citrinio logo pair, social card (+ its SVG source)
 favicon.svg
-CNAME.pending         the custom domain, parked until DNS exists (see below)
+CNAME                 objective-z.org
 .nojekyll             serve files as-is, no Jekyll processing
 ```
 
@@ -93,27 +93,14 @@ asset never passes through an online converter:
 rsvg-convert -w 1200 -h 630 assets/og-card.svg -o assets/og-card.png
 ```
 
-## Current state: preview on github.io
+## Paths
 
-The custom domain is not registered yet, so the `CNAME` file is parked as
-`CNAME.pending`. With a `CNAME` present, Pages redirects the `github.io` URL to
-the custom domain — which would make the site unreachable until DNS resolves.
+`index.html` uses **relative** asset paths (`css/main.css`, not `/css/main.css`).
+They resolve correctly at the domain root and at a `github.io/<repo>/` project
+path, so the site can be previewed either way without edits. Leave them relative.
 
-While parked, the site is served from a project path, so **`index.html` uses
-relative asset paths** (`css/main.css`, not `/css/main.css`). Relative paths work
-at a subpath *and* at a domain root, so they stay correct after the switch — do
-not change them back.
-
-`404.html` deliberately keeps absolute paths: it is served for arbitrary URLs, and
-relative paths would break for a miss below the first level. Its styling is
-therefore broken in the github.io preview and correct once the domain is live.
-
-### Switching to the domain
-
-1. Register `objective-z.org` and set the DNS records below.
-2. `git mv CNAME.pending CNAME` and push.
-3. Pages → Custom domain → `objective-z.org`, wait for the DNS check, tick
-   **Enforce HTTPS**.
+`404.html` keeps absolute paths on purpose: it answers arbitrary URLs, where a
+relative path would resolve below the site root.
 
 ## Deployment
 

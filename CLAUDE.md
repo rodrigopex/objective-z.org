@@ -165,8 +165,8 @@ domain is registered. Do not make them absolute again.
 `404.html` keeps absolute paths on purpose — it answers arbitrary URLs, where
 relative paths would resolve below the site root.
 
-The custom domain lives in `CNAME.pending`, not `CNAME`: a live `CNAME` makes
-Pages redirect the github.io URL to a domain that does not resolve yet.
+`CNAME` holds `objective-z.org`. Pages rewrites this file from the Settings
+field, so change the domain there, not here.
 
 ## Local preview
 
