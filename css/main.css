@@ -44,6 +44,15 @@
   --btn-bg-hover: #1e2b38;
   --btn-fg: #f4f8fb;
 
+  /* Syntax */
+  --syn-comment: #78879a;
+  --syn-keyword: #1b5a82;
+  --syn-directive: #86680d;
+  --syn-type: #17694a;
+  --syn-fn: #2c3d4f;
+  --syn-literal: #99422a;
+  --syn-pp: #6c7b8a;
+
   /* Type */
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Noto Sans", sans-serif;
@@ -86,6 +95,14 @@
     --btn-bg: #d3cc4f;
     --btn-bg-hover: #e2dc6b;
     --btn-fg: #17212b;
+
+    --syn-comment: #7d8e9d;
+    --syn-keyword: #7cc0e8;
+    --syn-directive: #d9d264;
+    --syn-type: #5cc48c;
+    --syn-fn: #eaf1f7;
+    --syn-literal: #e2916f;
+    --syn-pp: #93a4b4;
   }
 }
 
@@ -117,6 +134,14 @@
   --btn-bg: #d3cc4f;
   --btn-bg-hover: #e2dc6b;
   --btn-fg: #17212b;
+
+  --syn-comment: #7d8e9d;
+  --syn-keyword: #7cc0e8;
+  --syn-directive: #d9d264;
+  --syn-type: #5cc48c;
+  --syn-fn: #eaf1f7;
+  --syn-literal: #e2916f;
+  --syn-pp: #93a4b4;
 }
 
 /* --------------------------------------------------------------- base ---- */
@@ -162,7 +187,7 @@ h4 {
 }
 
 h1 {
-  font-size: clamp(2.1rem, 1.4rem + 3vw, 3.4rem);
+  font-size: clamp(1.95rem, 1.4rem + 2.3vw, 2.95rem);
   letter-spacing: -0.03em;
 }
 h2 {
@@ -402,7 +427,7 @@ section {
 
 .hero {
   border-top: 0;
-  padding-block: clamp(3rem, 7vw, 6rem) clamp(2.5rem, 5vw, 4rem);
+  padding-block: clamp(1.75rem, 3.5vw, 3rem) clamp(2.5rem, 5vw, 4rem);
 }
 
 .hero h1 {
@@ -410,39 +435,16 @@ section {
 }
 
 .hero-tagline {
-  font-size: clamp(1.1rem, 1rem + 0.6vw, 1.35rem);
-  color: var(--ink);
-  max-width: 40ch;
-  margin-bottom: 0.9rem;
+  font-size: clamp(1.05rem, 1rem + 0.45vw, 1.22rem);
+  color: var(--ink-muted);
+  max-width: 66ch;
+  margin-bottom: 0;
 }
 
 .hero-pitch {
   font-size: 1.05rem;
   color: var(--ink-muted);
   max-width: 62ch;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.02em;
-  color: var(--ink-muted);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-line);
-  border-radius: 999px;
-  padding: 0.24rem 0.7rem;
-  margin-bottom: 1.5rem;
-}
-
-.badge::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
 }
 
 .cta-row {
@@ -481,42 +483,6 @@ section {
   background: var(--btn-bg-hover);
   border-color: var(--btn-bg-hover);
   color: var(--btn-fg);
-}
-
-/* Stat strip */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
-  gap: 1px;
-  margin-top: clamp(2.5rem, 5vw, 3.5rem);
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.stat {
-  background: var(--bg);
-  padding: 1.1rem 1.15rem 1.2rem;
-}
-
-.stat-value {
-  font-size: 1.62rem;
-  font-weight: 650;
-  letter-spacing: -0.025em;
-  color: var(--heading);
-  font-variant-numeric: tabular-nums;
-  display: block;
-  border-bottom: 3px solid var(--accent);
-  padding-bottom: 0.3rem;
-  margin-bottom: 0.45rem;
-  width: fit-content;
-}
-
-.stat-label {
-  font-size: 0.855rem;
-  color: var(--ink-muted);
-  display: block;
 }
 
 /* ------------------------------------------------------------ pipeline ---- */
@@ -566,97 +532,7 @@ section {
   fill: var(--ink-faint);
 }
 
-/* ----------------------------------------------------------- card grid ---- */
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(17.5rem, 100%), 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.card {
-  background: var(--bg-subtle);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.15rem 1.2rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.card h3 {
-  margin-bottom: 0.4rem;
-}
-
-.card h3 a {
-  text-decoration: none;
-}
-
-.card h3 a:hover {
-  text-decoration: underline;
-}
-
-.card p {
-  font-size: 0.93rem;
-  color: var(--ink-muted);
-  max-width: none;
-  margin: 0;
-}
-
-.chip {
-  align-self: flex-start;
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  background: var(--bg);
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  padding: 0.15rem 0.55rem;
-  margin-bottom: 0.75rem;
-}
-
-/* Callout / panel */
-.panel {
-  background: var(--bg-subtle);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.35rem;
-  margin: 2rem 0;
-}
-
-.panel > :last-child {
-  margin-bottom: 0;
-}
-
-.panel h3 {
-  margin-bottom: 0.55rem;
-}
-
-.panel-strong {
-  border-left-color: var(--brand-slate);
-}
-
-:root[data-theme="dark"] .panel-strong,
-:root:not([data-theme="light"]) .panel-strong {
-  border-left-color: var(--line-strong);
-}
-
 /* --------------------------------------------------------------- lists ---- */
-
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
-  gap: 1.1rem 2rem;
-  margin-top: 1.75rem;
-}
-
-.feature-grid h3 {
-  padding-bottom: 0.45rem;
-  border-bottom: 1px solid var(--line);
-}
 
 .tight {
   list-style: none;
@@ -795,6 +671,43 @@ pre code {
   color: var(--ink);
 }
 
+/* -------------------------------------------------------------- syntax ---
+   Token spans are baked into the markup by tools/highlight.py -- there is no
+   runtime highlighter. Class names are scoped to pre>code deliberately: they
+   are short enough to collide with layout classes otherwise.
+   ------------------------------------------------------------------------ */
+
+pre code .c {
+  color: var(--syn-comment);
+  font-style: italic;
+}
+
+pre code .k {
+  color: var(--syn-keyword);
+}
+
+pre code .at {
+  color: var(--syn-directive);
+}
+
+pre code .t {
+  color: var(--syn-type);
+}
+
+pre code .fn {
+  color: var(--syn-fn);
+  font-weight: 600;
+}
+
+pre code .s,
+pre code .n {
+  color: var(--syn-literal);
+}
+
+pre code .pp {
+  color: var(--syn-pp);
+}
+
 .filename {
   font-family: var(--mono);
   font-size: 0.75rem;
@@ -803,46 +716,260 @@ pre code {
   display: block;
 }
 
-.steps {
-  counter-reset: step;
-  list-style: none;
-  padding: 0;
-  margin-top: 2rem;
-  /* Code blocks want the full column; the prose inside each <li> keeps its
-     own 72ch measure via the base p rule. */
-  max-width: none;
-}
+/* -------------------------------------------------- source / result split ---
+   Two code panes side by side: what you write, and what the transpiler emits.
+   Collapses to stacked panes before either pane gets too narrow to read.
+   -------------------------------------------------------------------------- */
 
-.steps > li {
-  counter-increment: step;
-  position: relative;
-  padding-left: 2.4rem;
-  margin-bottom: 2.25rem;
-  max-width: none;
-}
-
-.steps > li::before {
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 0.05rem;
-  width: 1.65rem;
-  height: 1.65rem;
+.split {
   display: grid;
-  place-items: center;
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  color: var(--ink-muted);
-  background: var(--bg-subtle);
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 1.5rem 0;
 }
 
-.steps h3 {
-  margin-bottom: 0.3rem;
+@media (max-width: 60rem) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pane {
+  background: var(--bg-code);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pane-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  max-width: none;
+  padding: 0.55rem 0.95rem;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+
+.pane-tag {
+  flex: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* The generated pane carries the accent so the eye lands on the result. */
+.pane + .pane .pane-head {
+  color: var(--ink-muted);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.pane pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  flex: 1;
+  font-size: 0.795rem;
+  line-height: 1.55;
+}
+
+/* ---------------------------------------------------------------- pairs ---- */
+
+.pair {
+  margin-top: 2.75rem;
+}
+
+.pair:first-of-type {
+  margin-top: 2rem;
+}
+
+.pair-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1rem;
+}
+
+.pair-head h3 {
+  margin: 0;
+}
+
+/* Cost badge beside a pair heading. Inline <code> inside it must not draw its
+   own chrome, or you get a box inside a box. */
+.chip {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  padding: 0.2rem 0.62rem;
+}
+
+.chip code {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-size: 1em;
+  white-space: nowrap;
+}
+
+.pair-note {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  margin: -0.4rem 0 0;
+}
+
+/* --------------------------------------------------------- hero specifics ---- */
+
+.hero-note {
+  font-size: 0.95rem;
+  color: var(--ink-muted);
+  max-width: 76ch;
+  margin-top: 1.35rem;
+}
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 1.9rem;
+  list-style: none;
+  padding: 1.35rem 0 0;
+  margin: 2.25rem 0 0;
+  max-width: none;
+  border-top: 1px solid var(--line);
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+}
+
+.metrics b {
+  font-size: 1.18rem;
+  font-weight: 650;
+  color: var(--heading);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.3rem;
+}
+
+.metrics-meta {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  margin-left: auto;
+}
+
+/* ----------------------------------------------------------- disclosure ---- */
+
+details {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+  margin: 1rem 0;
+}
+
+details + details {
+  margin-top: 0.6rem;
+}
+
+summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  font-weight: 550;
+  color: var(--heading);
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  content: "";
+  flex: none;
+  align-self: center;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--ink-faint);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 120ms ease;
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  summary::before {
+    transition: none;
+  }
+}
+
+summary:hover {
+  color: var(--link);
+}
+
+summary .hint {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 0.83rem;
+  color: var(--ink-faint);
+  text-align: right;
+}
+
+.details-body {
+  padding: 0.35rem 1.1rem 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.details-body > :last-child {
+  margin-bottom: 0;
+}
+
+.details-body h3 {
+  margin-top: 1.75rem;
+}
+
+.details-body > h3:first-child {
+  margin-top: 0.9rem;
+}
+
+.details-body .pipeline {
+  margin-top: 1.1rem;
+}
+
+/* ---------------------------------------------------------- quick start ---- */
+
+.start-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+  gap: 0 1.75rem;
+  margin-top: 1.75rem;
+}
+
+.start-grid pre {
+  margin-top: 0.35rem;
 }
 
 /* -------------------------------------------------------------- footer ---- */
+
 
 .site-footer {
   border-top: 1px solid var(--line);

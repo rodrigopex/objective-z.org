@@ -28,6 +28,33 @@ Do not break these. They are the reason the site exists in this shape.
 
 ## Content
 
+The page is **code-first**: a source/result split hero, then one pair per language
+feature, then results. Long-form detail belongs in a closed `<details>` block or
+on GitHub -- not in body copy. If a section grows past a short paragraph, that is
+a signal to collapse it or link out.
+
+Every line of generated C shown on the site is **real transpiler output**, kept in
+`examples/` with the command that produced it. Never hand-write or "clean up" the
+generated side of a pair -- regenerate it. Whitespace-only reflowing to fit the
+code pane is fine; changing an identifier or dropping a line is not.
+
+### Syntax highlighting
+
+Token `<span>`s inside `<pre><code>` are **baked into the markup** by
+`tools/highlight.py`. There is no runtime highlighter and no CDN library -- a
+CSP with `script-src 'self'` and the no-third-party rule both forbid one.
+
+After editing any code block:
+
+```sh
+python3 tools/highlight.py index.html            # new blocks only
+python3 tools/highlight.py --force index.html     # strip and redo every block
+```
+
+Never hand-edit a token span. Token classes (`.k .t .fn .c .s .n .at .pp`) are
+scoped to `pre code` in the stylesheet because they are short enough to collide
+with layout classes otherwise.
+
 Benchmark numbers are **copied by hand, not generated**. Single source of truth:
 `README.md` in `rodrigopex/objective-z`. When OZ benchmarks change, re-audit every
 table here against it.

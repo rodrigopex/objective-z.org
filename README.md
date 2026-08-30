@@ -12,11 +12,21 @@ index.html            the whole site — one page, anchor navigation
 404.html              not-found page, same shell
 css/main.css          design tokens, layout, components
 js/theme.js           theme toggle + narrow-screen nav (the only script)
+tools/highlight.py    authoring tool: bakes syntax-highlight spans into the
+                      markup (never runs in the browser)
+examples/             the demo .m and its real generated C, plus the command
+                      that produced them — the code shown on the page
 assets/               Citrinio logo pair, social card (+ its SVG source)
 favicon.svg
 CNAME                 objective-z.org
 .nojekyll             serve files as-is, no Jekyll processing
 ```
+
+The page leads with a source/result split — Objective-C on the left, the
+transpiler's actual output on the right — then one such pair per language
+feature. Long-form material (full benchmark tables, the alternative-language
+evaluations, limitations) sits in closed `<details>` blocks so the page stays
+short for a first-time reader.
 
 ## Local preview
 
@@ -39,6 +49,19 @@ See [CLAUDE.md](CLAUDE.md) for the full set. The three that matter most:
    `README.md`. That file is the single source of truth — re-audit the tables
    here whenever the benchmarks change, and keep the measurement footnote
    (nRF52833 DK, Cortex-M4F @ 64 MHz, DWT cycle counter, `-O2`) next to them.
+
+### Syntax highlighting
+
+Code blocks are highlighted at authoring time, not in the browser:
+
+```sh
+python3 tools/highlight.py index.html          # new blocks
+python3 tools/highlight.py --force index.html  # redo all blocks
+```
+
+The spans are committed. Nothing highlights at runtime, so there is no library
+to load, nothing to mis-tokenize on someone else's machine, and the code is
+still coloured with JavaScript disabled.
 
 ### Security posture
 
