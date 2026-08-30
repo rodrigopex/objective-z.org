@@ -823,6 +823,10 @@ pre code .pp {
 .tour-out > pre {
   padding: 1rem 1.1rem;
   overflow: auto;
+  /* Makes this the offsetParent for the groups inside, so tour.js can scroll
+     to an absolute offset instead of a delta from the current position -- the
+     latter reads wrong mid-animation. */
+  position: relative;
 }
 
 @media (min-width: 62rem) {
@@ -836,6 +840,15 @@ pre code .pp {
   .tour-panel {
     position: sticky;
     top: 4.25rem;
+  }
+
+  /* A sticky element releases at the bottom of its containing block, which
+     would drag the panel up behind the header during the final steps. Extend
+     the scrolling column past its last group so the panel stays pinned until
+     the tour is genuinely over. The space is outside the code box, so it reads
+     as section padding. */
+  .tour[data-tour="on"] .tour-code {
+    margin-bottom: 34vh;
   }
 
   .tour-out {

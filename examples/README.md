@@ -93,9 +93,13 @@ marked in the generated column:
 <span class="add">    OZObject_release(...);<b class="add-tag">added by the transpiler</b></span>
 ```
 
-The label is `user-select: none`, so copying the snippet does not carry it. In
-the tour these come from the `EMPHASIS` table in `tools/gen_tour.py`, which
-asserts the line it is told to wrap actually exists.
+The label is `user-select: none`, so copying the snippet does not carry it.
+
+Both a single line and a whole block can be marked. In the tour, a line comes
+from the `EMPHASIS` table in `tools/gen_tour.py` (which asserts the line exists);
+a whole block comes from a fifth element on the block's line-range spec. The
+generated `Thermostat_dealloc` is marked that way -- the class declares no
+`-dealloc`, so the entire function is the transpiler's.
 
 ## Categories live in their own file
 

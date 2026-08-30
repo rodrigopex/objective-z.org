@@ -108,8 +108,11 @@ STEPS = [
   [("thermostat_ozm.c", OZM, 145, 151)]),
 
  (9, (113, 119), "Here the receiver type is known, so the send collapses to a direct "
-     "call. And the <code>dealloc</code> you never wrote releases every strong ivar.",
-  [("thermostat_ozm.c", OZM, 155, 158), ("thermostat_ozm.c", OZM, 160, 166)]),
+     "call. Below it is a whole function that appears in no source file: there is no "
+     "<code>-dealloc</code> in the class, so ARC wrote one, releasing each strong ivar "
+     "in turn before handing off to the superclass.",
+  [("thermostat_ozm.c", OZM, 155, 158),
+   ("thermostat_ozm.c", OZM, 160, 166, "added by the transpiler")]),
 
  (10, (120, 130), "A plain C callback can talk to objects. Only the message send is "
      "rewritten; the listener macro and the function signature are untouched.",
@@ -125,6 +128,14 @@ EMPHASIS = {
 
 def esc(s):
     return html.escape(s, quote=False)
+
+
+def callout(text, label):
+    """Wrap a whole block in the callout, tagging its first line."""
+    first, sep, rest = text.partition("\n")
+    return ('<span class="add">' + esc(first)
+            + f'<b class="add-tag">{esc(label)}</b>'
+            + esc(sep + rest) + "</span>")
 
 
 def emphasise(step, text):
@@ -164,13 +175,18 @@ right, notes = [], []
 for step, _o, cap, blocks in STEPS:
     files = []
     body = []
-    for label, buf, a, b in blocks:
+    for block in blocks:
+        # 4-tuple: plain block. 5-tuple: the whole block is transpiler-inserted,
+        # so it gets the callout with the given label.
+        label, buf, a, b = block[:4]
+        note = block[4] if len(block) > 4 else None
         if label not in files:
             files.append(label)
-        body.append(reflow(lines(buf, a, b)))
+        text = reflow(lines(buf, a, b))
+        body.append(callout(text, note) if note else emphasise(step, text))
     right.append(
         f'<span class="g" data-step="{step}" data-file="{esc(" · ".join(files))}">'
-        + emphasise(step, "\n\n".join(body)) + "</span>")
+        + "\n\n".join(body) + "</span>")
     notes.append(f'<p class="tour-note" data-step="{step}">'
                  f'<b>{step}.</b> {cap}</p>')
 

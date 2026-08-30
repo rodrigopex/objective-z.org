@@ -70,11 +70,12 @@
       fileLabel.textContent = active.getAttribute("data-file") || "";
     }
 
-    /* Keep the lit region inside the panel's own scroll box. */
-    var delta = active.getBoundingClientRect().top -
-                outPre.getBoundingClientRect().top;
+    /* Keep the lit region inside the panel's own scroll box. offsetTop is an
+       absolute offset within the scroll container (the pre is positioned), so
+       this stays correct even if a previous smooth scroll is still running --
+       a delta from the live scroll position does not. */
     outPre.scrollTo({
-      top: outPre.scrollTop + delta - 14,
+      top: Math.max(0, active.offsetTop - 14),
       behavior: window.matchMedia(REDUCED).matches ? "auto" : "smooth"
     });
   }

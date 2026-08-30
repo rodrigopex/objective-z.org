@@ -325,7 +325,7 @@
 <p class="tour-note" data-step="6"><b>6.</b> The array literal becomes a stack buffer of retained objects. The expiry block is lifted out as a file-scope function and handed to the timer by name — which is why only non-capturing blocks are allowed. <code>__bridge</code> is just a cast.</p>
 <p class="tour-note" data-step="7"><b>7.</b> Fast enumeration becomes an explicit iterator loop. Because <code>sensor</code> is <code>id</code>, the read goes through the protocol table — one indexed load, no message lookup. This is the polymorphic path.</p>
 <p class="tour-note" data-step="8"><b>8.</b> Nothing in this method mentions memory — and yet a release appears. ARC works out that <code>spare</code> dies at the closing brace and writes the call for you, before the return, at compile time. No collector, no runtime bookkeeping, and the exact instruction is right there to audit.</p>
-<p class="tour-note" data-step="9"><b>9.</b> Here the receiver type is known, so the send collapses to a direct call. And the <code>dealloc</code> you never wrote releases every strong ivar.</p>
+<p class="tour-note" data-step="9"><b>9.</b> Here the receiver type is known, so the send collapses to a direct call. Below it is a whole function that appears in no source file: there is no <code>-dealloc</code> in the class, so ARC wrote one, releasing each strong ivar in turn before handing off to the superclass.</p>
 <p class="tour-note" data-step="10"><b>10.</b> A plain C callback can talk to objects. Only the message send is rewritten; the listener macro and the function signature are untouched.</p>
         </div>
         <div class="pane tour-out">
@@ -452,13 +452,13 @@
     <span class="k">return</span> <span class="fn">Thermometer_read</span>(<span class="k">self</span>-&gt;_probe) &lt; <span class="k">self</span>-&gt;_setpoint;
 }
 
-<span class="k">void</span> <span class="fn">Thermostat_dealloc</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+<span class="add"><span class="k">void</span> <span class="fn">Thermostat_dealloc</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)<b class="add-tag">added by the transpiler</b>
 {
     <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_probe);
     <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_bank);
     <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>-&gt;_poll);
     <span class="fn">OZObject_dealloc</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="k">self</span>);
-}</span>
+}</span></span>
 <span class="g" data-step="10" data-file="thermostat_ozm.c"><span class="k">static</span> <span class="k">struct</span> <span class="t">Thermostat</span> * unit;
 <span class="c">/* A plain C callback that talks to the object. */</span>
 <span class="k">static</span> <span class="k">void</span> <span class="fn">on_setpoint</span>(<span class="k">const</span> <span class="k">struct</span> zbus_channel * chan)

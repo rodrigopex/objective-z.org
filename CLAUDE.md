@@ -80,9 +80,17 @@ the STEPS table in the generator and re-slice. The generator asserts that every
 whitespace reflow it applies actually matched, so a stale line range fails loudly
 instead of silently emitting the wrong code.
 
-A line the transpiler inserted gets the `.add` callout with an `.add-tag` label
-(see `EMPHASIS` in the generator). Use it only for code that has no counterpart in
-the source -- an injected release, not an ordinary translation.
+Code the transpiler inserted gets the `.add` callout with an `.add-tag` label.
+Two ways to ask for it in `tools/gen_tour.py`:
+
+- one line inside a block -> add it to the `EMPHASIS` map, keyed by step;
+- a whole block -> give that block's spec a fifth element, the label, e.g.
+  `("thermostat_ozm.c", OZM, 160, 166, "added by the transpiler")`. The tag lands
+  on the block's first line.
+
+Use it only for code with no counterpart in the source -- an injected release, or
+a whole function like `dealloc` that the author never wrote -- never for an
+ordinary translation.
 
 Left group N, caption N and right group N must always exist as a set. The step
 numbers are the only contract between the markup and `js/tour.js`.
