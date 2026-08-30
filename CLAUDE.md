@@ -49,6 +49,20 @@ case-insensitive filesystem. Do not flatten them back together. Never hand-write
 generated side of a pair -- regenerate it. Whitespace-only reflowing to fit the
 code pane is fine; changing an identifier or dropping a line is not.
 
+### The hero
+
+`tools/gen_hero.py` rebuilds the hero's split from `examples/hero/`: the left pane
+is `hero.m` verbatim, the right pane is the struct, the slab pool, the accessors
+and `main`, in the order the source declares them. Both panes must tell the whole
+story -- if the source declares something, the generated side has to show what it
+became. Re-run it after changing the example, then re-highlight:
+
+```sh
+python3 tools/gen_hero.py
+python3 tools/highlight.py --force index.html
+python3 tools/check_examples.py
+```
+
 ### The code tour
 
 The `#translate` section is a scroll-linked walkthrough: the left column is the

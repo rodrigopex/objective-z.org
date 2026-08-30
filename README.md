@@ -15,6 +15,8 @@ js/theme.js           theme toggle + narrow-screen nav (the only script)
 js/tour.js            scroll-linked code tour (activates above 62rem only)
 tools/highlight.py    authoring tool: bakes syntax-highlight spans into the
                       markup (never runs in the browser)
+tools/gen_hero.py     authoring tool: rebuilds the hero's split from
+                      examples/hero/
 tools/gen_tour.py     authoring tool: slices the tour's code groups out of
                       examples/ so both columns stay verbatim
 tools/check_examples.py

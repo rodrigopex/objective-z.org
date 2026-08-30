@@ -110,8 +110,17 @@
 }</code></pre>
       </div>
       <div class="pane">
-        <p class="pane-head"><span>generated C</span> <span class="pane-tag pane-file">Thermostat_ozm.c · hero_ozm.c</span></p>
-<pre><code><span class="k">int</span> <span class="fn">Thermostat_setpoint</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
+        <p class="pane-head"><span>generated C</span> <span class="pane-tag pane-file">Thermostat_ozh.h · Thermostat_ozm.c · hero_ozm.c</span></p>
+<pre><code><span class="k">struct</span> <span class="t">Thermostat</span> {
+    <span class="k">struct</span> <span class="t">OZObject</span> base;
+    <span class="k">int</span> _setpoint;
+    <span class="k">bool</span> _heating;
+};
+
+<span class="fn">OZ_SLAB_DEFINE</span>(oz_slab_Thermostat,
+               <span class="k">sizeof</span>(<span class="k">struct</span> <span class="t">Thermostat</span>), <span class="n">1</span>, <span class="n">4</span>);
+
+<span class="k">int</span> <span class="fn">Thermostat_setpoint</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
 {
     <span class="k">int</span> val = {<span class="n">0</span>};
     <span class="fn">OZ_SPINLOCK</span>(&amp;<span class="k">self</span>-&gt;base._oz_prop_lock) {
@@ -140,7 +149,7 @@
       </div>
     </div>
 
-    <p class="hero-note">Define a class, use it, and every message becomes an ordinary C call. <code>atomic</code> turns into a real Zephyr <code>k_spinlock</code> guard, <code>getter=isHeating</code> names the function, and ARC drops in the release you never wrote. No runtime, no <code>objc_msgSend</code>, no second compiler, no FFI bindings.</p>
+    <p class="hero-note">The class becomes a struct whose first member is its superclass, its instances come from a static pool, <code>atomic</code> turns into a real Zephyr <code>k_spinlock</code> guard, and <code>getter=isHeating</code> names the function. Every message becomes an ordinary C call — and ARC drops in the release you never wrote. No runtime, no <code>objc_msgSend</code>, no second compiler, no FFI bindings.</p>
 
     <div class="cta-row">
       <a class="btn btn-primary" href="#start">Get started</a>
