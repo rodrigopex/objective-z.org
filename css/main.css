@@ -430,6 +430,12 @@ section {
   padding-block: clamp(1.75rem, 3.5vw, 3rem) clamp(2.5rem, 5vw, 4rem);
 }
 
+/* The hero carries a full source/result split, so it gets the tour's wider
+   measure. The prose inside keeps its own max-width. */
+.hero > .wrap {
+  max-width: 1400px;
+}
+
 .hero h1 {
   margin-bottom: 0.35em;
 }
@@ -671,6 +677,37 @@ pre code {
   color: var(--ink);
 }
 
+/* --------------------------------------------------- transpiler callout ---
+   Marks a line that exists only because the transpiler put it there. The tag
+   is real text (not generated content) so it survives with CSS off, and is
+   user-select: none so copying the snippet does not carry the annotation.
+   ------------------------------------------------------------------------ */
+
+pre code .add {
+  display: block;
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+  margin-inline: -1.1rem;
+  padding-inline: calc(1.1rem - 3px) 1.1rem;
+}
+
+.add-tag {
+  margin-left: 1.5rem;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--syn-directive);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.add-tag::before {
+  content: "\2190\00a0";
+}
+
 /* -------------------------------------------------------------- syntax ---
    Token spans are baked into the markup by tools/highlight.py -- there is no
    runtime highlighter. Class names are scoped to pre>code deliberately: they
@@ -786,12 +823,6 @@ pre code .pp {
 .tour-out > pre {
   padding: 1rem 1.1rem;
   overflow: auto;
-}
-
-/* This tag holds a filename, which is case-sensitive -- do not upper-case it. */
-.tour-out .pane-tag {
-  text-transform: none;
-  letter-spacing: 0;
 }
 
 @media (min-width: 62rem) {
@@ -912,6 +943,12 @@ pre code .pp {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+/* Filenames are case-sensitive -- never upper-case them. */
+.pane-file {
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* The generated pane carries the accent so the eye lands on the result. */

@@ -34,7 +34,18 @@ on GitHub -- not in body copy. If a section grows past a short paragraph, that i
 a signal to collapse it or link out.
 
 Every line of generated C shown on the site is **real transpiler output**, kept in
-`examples/` with the command that produced it. Never hand-write or "clean up" the
+`examples/` with the command that produced it. The hero comes from
+`examples/hero/hero.m` (class plus a `main` that uses it); the tour comes from
+`examples/tour/thermostat.m`.
+
+Run **`python3 tools/check_examples.py`** after touching either the page or the
+examples. It asserts every code pane still traces to its source file, comparing
+with whitespace removed and C line splices rejoined, so a reflow passes but a
+renamed identifier or a dropped line fails.
+
+The two examples sit in separate directories because the tour emits
+`thermostat_ozm.c` and the hero emits `Thermostat_ozm.c` -- the same path on a
+case-insensitive filesystem. Do not flatten them back together. Never hand-write or "clean up" the
 generated side of a pair -- regenerate it. Whitespace-only reflowing to fit the
 code pane is fine; changing an identifier or dropping a line is not.
 
@@ -54,6 +65,10 @@ python3 tools/gen_tour.py <dir-with-thermostat.m-and-final/> /tmp/frag.html
 the STEPS table in the generator and re-slice. The generator asserts that every
 whitespace reflow it applies actually matched, so a stale line range fails loudly
 instead of silently emitting the wrong code.
+
+A line the transpiler inserted gets the `.add` callout with an `.add-tag` label
+(see `EMPHASIS` in the generator). Use it only for code that has no counterpart in
+the source -- an injected release, not an ordinary translation.
 
 Left group N, caption N and right group N must always exist as a set. The step
 numbers are the only contract between the markup and `js/tour.js`.

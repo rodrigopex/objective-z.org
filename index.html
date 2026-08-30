@@ -79,22 +79,38 @@
 
     <div class="split">
       <div class="pane">
-        <p class="pane-head"><span>thermostat.m</span> <span class="pane-tag">you write</span></p>
-<pre><code><span class="at">@interface</span> <span class="t">Thermostat</span> : <span class="t">OZObject</span> {
-    <span class="k">int</span> _setpoint;
-    <span class="t">BOOL</span> _heating;
+        <p class="pane-head"><span>hero.m</span> <span class="pane-tag">you write</span></p>
+<pre><code><span class="pp">#import</span> &lt;<span class="t">Foundation</span>/<span class="t">OZObject</span>.h&gt;
+<span class="pp">#import</span> &lt;<span class="t">Foundation</span>/<span class="t">OZLog</span>.h&gt;
+
+<span class="at">@interface</span> <span class="t">Thermostat</span> : <span class="t">OZObject</span> {
+        <span class="k">int</span> _setpoint;
+        <span class="t">BOOL</span> _heating;
 }
 <span class="at">@property</span> (<span class="k">atomic</span>) <span class="k">int</span> setpoint;
 <span class="at">@property</span> (<span class="k">nonatomic</span>, getter=isHeating) <span class="t">BOOL</span> heating;
 <span class="at">@end</span>
 
 <span class="at">@implementation</span> <span class="t">Thermostat</span>
+
 <span class="at">@synthesize</span> setpoint = _setpoint;
 <span class="at">@synthesize</span> heating = _heating;
-<span class="at">@end</span></code></pre>
+
+<span class="at">@end</span>
+
+<span class="k">int</span> <span class="fn">main</span>(<span class="k">void</span>)
+{
+        <span class="t">Thermostat</span> *unit = [[<span class="t">Thermostat</span> alloc] init];
+
+        unit.setpoint = <span class="n">21</span>;
+        unit.heating = [unit setpoint] &gt; <span class="n">18</span>;
+
+        <span class="fn">OZLog</span>(<span class="s">"setpoint=%d heating=%d"</span>, [unit setpoint], [unit isHeating]);
+        <span class="k">return</span> <span class="n">0</span>;
+}</code></pre>
       </div>
       <div class="pane">
-        <p class="pane-head"><span>thermostat_ozm.c</span> <span class="pane-tag">generated</span></p>
+        <p class="pane-head"><span>generated C</span> <span class="pane-tag pane-file">Thermostat_ozm.c · hero_ozm.c</span></p>
 <pre><code><span class="k">int</span> <span class="fn">Thermostat_setpoint</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
 {
     <span class="k">int</span> val = {<span class="n">0</span>};
@@ -104,22 +120,27 @@
     <span class="k">return</span> val;
 }
 
-<span class="k">void</span> <span class="fn">Thermostat_setSetpoint_</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>,
-                             <span class="k">int</span> setpoint)
-{
-    <span class="fn">OZ_SPINLOCK</span>(&amp;<span class="k">self</span>-&gt;base._oz_prop_lock) {
-        <span class="k">self</span>-&gt;_setpoint = setpoint;
-    }
-}
-
 <span class="t">BOOL</span> <span class="fn">Thermostat_isHeating</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)
 {
     <span class="k">return</span> <span class="k">self</span>-&gt;_heating;
-}</code></pre>
+}
+
+<span class="k">int</span> <span class="fn">main</span>(<span class="k">void</span>)
+{
+    <span class="k">struct</span> <span class="t">Thermostat</span> * unit = (<span class="k">struct</span> <span class="t">Thermostat</span> *)
+        <span class="fn">OZObject_init</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">Thermostat_alloc</span>());
+    <span class="fn">Thermostat_setSetpoint_</span>(unit, <span class="n">21</span>);
+    <span class="fn">Thermostat_setHeating_</span>(unit, <span class="fn">Thermostat_setpoint</span>(unit) &gt; <span class="n">18</span>);
+    <span class="fn">OZLog</span>(<span class="s">"setpoint=%d heating=%d"</span>,
+          <span class="fn">Thermostat_setpoint</span>(unit), <span class="fn">Thermostat_isHeating</span>(unit));
+<span class="add">    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)unit);<b class="add-tag">added by the transpiler</b></span>
+    <span class="k">return</span> <span class="n">0</span>;
+}
+</code></pre>
       </div>
     </div>
 
-    <p class="hero-note"><code>atomic</code> becomes a real Zephyr <code>k_spinlock</code> guard. <code>getter=isHeating</code> names the function. No runtime, no <code>objc_msgSend</code>, no second compiler, no FFI bindings — and the whole Zephyr macro and devicetree API stays directly callable, because the file is still C.</p>
+    <p class="hero-note">Define a class, use it, and every message becomes an ordinary C call. <code>atomic</code> turns into a real Zephyr <code>k_spinlock</code> guard, <code>getter=isHeating</code> names the function, and ARC drops in the release you never wrote. No runtime, no <code>objc_msgSend</code>, no second compiler, no FFI bindings.</p>
 
     <div class="cta-row">
       <a class="btn btn-primary" href="#start">Get started</a>
@@ -140,7 +161,7 @@
   <div class="wrap">
     <p class="eyebrow">What it emits</p>
     <h2>One file, and the C it becomes</h2>
-    <p class="lede">Scroll the Objective-C on the left. The generated C keeps pace on the right, highlighting whatever you are looking at. Every line of it is the transpiler's own output for <a href="https://github.com/rodrigopex/objective-z.org/blob/main/examples/thermostat.m" rel="noopener noreferrer">this one file</a>.</p>
+    <p class="lede">Scroll the Objective-C on the left. The generated C keeps pace on the right, highlighting whatever you are looking at. Every line of it is the transpiler's own output for <a href="https://github.com/rodrigopex/objective-z.org/blob/main/examples/tour/thermostat.m" rel="noopener noreferrer">this one file</a>.</p>
   </div>
 
   <div class="wrap wrap-tour">
@@ -294,12 +315,12 @@
 <p class="tour-note" data-step="5"><b>5.</b> <code>atomic</code> wraps both accessors in a real Zephyr <code>k_spinlock</code> guard. <code>getter=isHeating</code> names the generated function; the setter keeps its conventional name.</p>
 <p class="tour-note" data-step="6"><b>6.</b> The array literal becomes a stack buffer of retained objects. The expiry block is lifted out as a file-scope function and handed to the timer by name — which is why only non-capturing blocks are allowed. <code>__bridge</code> is just a cast.</p>
 <p class="tour-note" data-step="7"><b>7.</b> Fast enumeration becomes an explicit iterator loop. Because <code>sensor</code> is <code>id</code>, the read goes through the protocol table — one indexed load, no message lookup. This is the polymorphic path.</p>
-<p class="tour-note" data-step="8"><b>8.</b> Nothing in this method mentions memory. ARC works out that <code>spare</code> dies at the closing brace and injects the release for you — before the return, at compile time. No collector, no runtime bookkeeping, and the exact instruction is right there to audit.</p>
+<p class="tour-note" data-step="8"><b>8.</b> Nothing in this method mentions memory — and yet a release appears. ARC works out that <code>spare</code> dies at the closing brace and writes the call for you, before the return, at compile time. No collector, no runtime bookkeeping, and the exact instruction is right there to audit.</p>
 <p class="tour-note" data-step="9"><b>9.</b> Here the receiver type is known, so the send collapses to a direct call. And the <code>dealloc</code> you never wrote releases every strong ivar.</p>
 <p class="tour-note" data-step="10"><b>10.</b> A plain C callback can talk to objects. Only the message send is rewritten; the listener macro and the function signature are untouched.</p>
         </div>
         <div class="pane tour-out">
-          <p class="pane-head"><span>generated C</span> <span class="pane-tag" id="tour-file">thermostat_ozm.c</span></p>
+          <p class="pane-head"><span>generated C</span> <span class="pane-tag pane-file" id="tour-file">thermostat_ozm.c</span></p>
 <pre><code><span class="g" data-step="1" data-file="thermostat_ozm.c"><span class="k">struct</span> msg_setpoint {
         <span class="k">int</span> celsius;
 }
@@ -414,7 +435,7 @@
     <span class="k">struct</span> <span class="t">Thermometer</span> * spare = (<span class="k">struct</span> <span class="t">Thermometer</span> *)
         <span class="fn">OZObject_init</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)<span class="fn">Thermometer_alloc</span>());
     <span class="k">int</span> reading = <span class="fn">Thermometer_read</span>(spare);
-    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)spare);
+<span class="add">    <span class="fn">OZObject_release</span>((<span class="k">struct</span> <span class="t">OZObject</span> *)spare);<b class="add-tag">added by the transpiler</b></span>
     <span class="k">return</span> reading;
 }</span>
 <span class="g" data-step="9" data-file="thermostat_ozm.c"><span class="t">BOOL</span> <span class="fn">Thermostat_shouldHeat</span>(<span class="k">struct</span> <span class="t">Thermostat</span> *<span class="k">self</span>)

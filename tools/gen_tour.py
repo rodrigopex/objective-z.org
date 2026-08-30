@@ -101,10 +101,10 @@ STEPS = [
      "— one indexed load, no message lookup. This is the polymorphic path.",
   [("thermostat_ozm.c", OZM, 126, 141), ("oz_dispatch.h", DSH, 175, 175)]),
 
- (8, (105, 112), "Nothing in this method mentions memory. ARC works out that "
-     "<code>spare</code> dies at the closing brace and injects the release for you — "
-     "before the return, at compile time. No collector, no runtime bookkeeping, and "
-     "the exact instruction is right there to audit.",
+ (8, (105, 112), "Nothing in this method mentions memory — and yet a release "
+     "appears. ARC works out that <code>spare</code> dies at the closing brace and "
+     "writes the call for you, before the return, at compile time. No collector, no "
+     "runtime bookkeeping, and the exact instruction is right there to audit.",
   [("thermostat_ozm.c", OZM, 145, 151)]),
 
  (9, (113, 119), "Here the receiver type is known, so the send collapses to a direct "
@@ -116,8 +116,28 @@ STEPS = [
   [("thermostat_ozm.c", OZM, 170, 178)]),
 ]
 
+# Lines that exist only because the transpiler inserted them. Called out in the
+# generated column with a label. Keyed by step; the text must match exactly.
+EMPHASIS = {
+ 8: ("    OZObject_release((struct OZObject *)spare);", "added by the transpiler"),
+}
+
+
 def esc(s):
     return html.escape(s, quote=False)
+
+
+def emphasise(step, text):
+    """Wrap an inserted line in the callout span, escaping around it."""
+    if step not in EMPHASIS:
+        return esc(text)
+    line, label = EMPHASIS[step]
+    assert line in text, f"step {step}: emphasis line not found"
+    head, _, tail = text.partition(line)
+    return (esc(head)
+            + '<span class="add">' + esc(line)
+            + f'<b class="add-tag">{esc(label)}</b></span>'
+            + esc(tail))
 
 used = {k: 0 for k in REFLOW}
 
@@ -150,7 +170,7 @@ for step, _o, cap, blocks in STEPS:
         body.append(reflow(lines(buf, a, b)))
     right.append(
         f'<span class="g" data-step="{step}" data-file="{esc(" · ".join(files))}">'
-        + esc("\n\n".join(body)) + "</span>")
+        + emphasise(step, "\n\n".join(body)) + "</span>")
     notes.append(f'<p class="tour-note" data-step="{step}">'
                  f'<b>{step}.</b> {cap}</p>')
 

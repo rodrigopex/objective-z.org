@@ -17,8 +17,11 @@ tools/highlight.py    authoring tool: bakes syntax-highlight spans into the
                       markup (never runs in the browser)
 tools/gen_tour.py     authoring tool: slices the tour's code groups out of
                       examples/ so both columns stay verbatim
-examples/             the demo .m and its real generated C, plus the command
-                      that produced them — the code shown on the page
+tools/check_examples.py
+                      verifies every code pane still matches the example
+                      files (run after editing either)
+examples/hero/        the first screen's .m and its real generated C
+examples/tour/        the code tour's .m and its real generated C
 assets/               Citrinio logo pair, social card (+ its SVG source)
 favicon.svg
 CNAME                 objective-z.org
