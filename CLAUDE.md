@@ -49,25 +49,18 @@ case-insensitive filesystem. Do not flatten them back together. Never hand-write
 generated side of a pair -- regenerate it. Whitespace-only reflowing to fit the
 code pane is fine; changing an identifier or dropping a line is not.
 
-### The hero
-
-`tools/gen_hero.py` rebuilds the hero's split from `examples/hero/`: the left pane
-is `hero.m` verbatim, the right pane is the struct, the slab pool, the accessors
-and `main`, in the order the source declares them. Both panes must tell the whole
-story -- if the source declares something, the generated side has to show what it
-became. Re-run it after changing the example, then re-highlight:
-
-```sh
-python3 tools/gen_hero.py
-python3 tools/highlight.py --force index.html
-python3 tools/check_examples.py
-```
-
 ### The code tour
 
-The `#translate` section is a scroll-linked walkthrough: the left column is the
-whole example file split into groups, the right column is the generated C pinned
-in place with the matching region lit. Both sides are **generated** by
+**There is exactly one code section on the page.** The `#translate` section is a
+scroll-linked walkthrough and it carries the whole demonstration: the left column
+is the whole example file split into groups, the right column is the generated C
+pinned in place with the matching region lit. Do not add a second code pair
+elsewhere -- if a point needs code, it belongs in a tour step.
+
+Captions are where the argument gets made. Each one says what the construct
+became **and** what that buys, quoting the measured figure where there is one
+("12 cycles", "zero bytes of RAM"). Numbers must come from the benchmark tables,
+not from intuition. Both sides are **generated** by
 `tools/gen_tour.py`, which slices exact line ranges out of `examples/` --
 
 ```sh
@@ -94,6 +87,15 @@ ordinary translation.
 
 Left group N, caption N and right group N must always exist as a set. The step
 numbers are the only contract between the markup and `js/tour.js`.
+
+The step ranges must **tile the source file exactly** -- the generator asserts
+that the left column renders the same number of lines the file has, because an
+off-by-one silently duplicates a line at every group boundary.
+
+Pointer and scroll both drive it, arbitrated by whichever the reader used last:
+`pointermove` over a group takes control, and any scroll hands it straight back.
+It has to be `pointermove`, not `pointerover` -- a cursor left resting over the
+column would otherwise hijack the highlight as content slid underneath it.
 
 `js/tour.js` activates only above `62rem` and only by setting
 `data-tour="on"`; every interactive CSS rule is gated on both. With JS off or on

@@ -5,6 +5,11 @@
  * IntersectionObserver watches a thin band across the middle of the viewport;
  * whichever left group crosses it becomes the active step.
  *
+ * Moving the pointer over a group overrides the scroll position, so a reader can
+ * look ahead or back without scrolling. Scrolling takes control straight back.
+ * Whichever input was used last wins -- otherwise a cursor left resting over the
+ * column would hijack the highlight as content slid underneath it.
+ *
  * Progressive enhancement: this only activates above the two-column
  * breakpoint. Without it the markup is a plain listing with every caption
  * visible and nothing dimmed, which is also what a JS-off reader gets.
@@ -38,10 +43,12 @@
 
   var wide = window.matchMedia(WIDE);
   var observer = null;
-  var current = null;
+  var current = null;   /* what is rendered */
+  var bandStep = null;  /* what the scroll position says */
+  var hoverStep = null; /* what the pointer says, if any */
 
-  function setActive(step) {
-    if (step === current) {
+  function render(step) {
+    if (!step || step === current) {
       return;
     }
     current = step;
@@ -80,6 +87,11 @@
     });
   }
 
+  /* The pointer wins while it is over a group; otherwise the scroll band does. */
+  function sync_active() {
+    render(hoverStep || bandStep);
+  }
+
   function enable() {
     if (observer) {
       return;
@@ -110,12 +122,60 @@
         return el.getBoundingClientRect().top < best.getBoundingClientRect().top
           ? el : best;
       });
-      setActive(hit.getAttribute("data-step"));
+      bandStep = hit.getAttribute("data-step");
+      sync_active();
     }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
 
     leftGroups.forEach(function (g) { observer.observe(g); });
-    setActive(leftGroups[0].getAttribute("data-step"));
+    bandStep = leftGroups[0].getAttribute("data-step");
+    sync_active();
   }
+
+  /* Delegated: one listener for the whole column, not one per group.
+
+     pointermove, not pointerover: the pointer has to actually move to take
+     control. A cursor parked over the column while the reader scrolls would
+     otherwise keep "entering" whichever group slid under it. Mouse only, so a
+     touch drag over the code does not hijack anything. */
+  var moveQueued = false;
+  var lastMoveTarget = null;
+
+  code.addEventListener("pointermove", function (event) {
+    if (!observer || event.pointerType !== "mouse") {
+      return;
+    }
+    lastMoveTarget = event.target;
+    if (moveQueued) {
+      return;
+    }
+    moveQueued = true;
+    window.requestAnimationFrame(function () {
+      moveQueued = false;
+      var el = lastMoveTarget;
+      var g = el && el.closest ? el.closest(".g[data-step]") : null;
+      var step = g && code.contains(g) ? g.getAttribute("data-step") : null;
+      if (step !== hoverStep) {
+        hoverStep = step;
+        sync_active();
+      }
+    });
+  });
+
+  code.addEventListener("pointerleave", function (event) {
+    if (event.pointerType && event.pointerType !== "mouse") {
+      return;
+    }
+    hoverStep = null;
+    sync_active();
+  });
+
+  /* Scrolling is an explicit signal to stop following the pointer. */
+  window.addEventListener("scroll", function () {
+    if (hoverStep !== null) {
+      hoverStep = null;
+      sync_active();
+    }
+  }, { passive: true });
 
   function disable() {
     if (!observer) {
@@ -125,6 +185,8 @@
     observer = null;
     tour.removeAttribute("data-tour");
     current = null;
+    bandStep = null;
+    hoverStep = null;
     leftGroups.concat(notes, [].slice.call(out.querySelectorAll(".g")))
       .forEach(function (el) { el.classList.remove("is-active"); });
   }

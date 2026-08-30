@@ -15,30 +15,28 @@ js/theme.js           theme toggle + narrow-screen nav (the only script)
 js/tour.js            scroll-linked code tour (activates above 62rem only)
 tools/highlight.py    authoring tool: bakes syntax-highlight spans into the
                       markup (never runs in the browser)
-tools/gen_hero.py     authoring tool: rebuilds the hero's split from
-                      examples/hero/
 tools/gen_tour.py     authoring tool: slices the tour's code groups out of
                       examples/ so both columns stay verbatim
 tools/check_examples.py
                       verifies every code pane still matches the example
                       files (run after editing either)
-examples/hero/        the first screen's .m and its real generated C
-examples/tour/        the code tour's .m and its real generated C
+examples/tour/        the demonstrated .m and its real generated C
 assets/               Citrinio logo pair, social card (+ its SVG source)
 favicon.svg
 CNAME                 objective-z.org
 .nojekyll             serve files as-is, no Jekyll processing
 ```
 
-The page leads with a source/result split — Objective-C on the left, the
-transpiler's actual output on the right — and then walks one complete example
-file top to bottom: as you scroll the Objective-C, the generated C stays pinned
-beside it with the matching region highlighted. Long-form material (full
+The page has one code section, and it is the whole demonstration: a complete
+example file on the left, the transpiler's actual output pinned on the right. As
+you scroll — or hover — the generated C highlights the matching lines while the
+caption says what the construct became and what it buys. Long-form material (full
 benchmark tables, the alternative-language evaluations, limitations) sits in
 closed `<details>` blocks so the page stays short for a first-time reader.
 
-The tour needs no framework: `position: sticky` plus one `IntersectionObserver`,
-and it degrades to a plain listing with JS off or on a narrow screen.
+It needs no framework: `position: sticky`, one `IntersectionObserver` and a
+`pointermove` handler. With JS off or on a narrow screen it degrades to a plain
+listing with every caption shown and nothing dimmed.
 
 ## Local preview
 

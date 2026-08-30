@@ -17,6 +17,7 @@ struct Thermometer {
 
 int Thermometer_read(struct Thermometer *self);
 void Thermometer_dealloc(struct Thermometer *self);
+int main(void);
 
 extern oz_slab_t oz_slab_Thermometer;
 

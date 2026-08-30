@@ -885,6 +885,18 @@ pre code .pp {
     background: var(--accent-soft);
   }
 
+  /* Hovering a group drives the panel, so say so on pointer devices. */
+  @media (hover: hover) and (pointer: fine) {
+    .tour[data-tour="on"] .tour-code .g:hover {
+      border-left-color: var(--line-strong);
+      cursor: default;
+    }
+
+    .tour[data-tour="on"] .tour-code .g.is-active:hover {
+      border-left-color: var(--accent);
+    }
+  }
+
   /* Right: de-emphasise everything but the matching region. */
   .tour[data-tour="on"] .tour-out .g {
     opacity: 0.38;
@@ -906,28 +918,7 @@ pre code .pp {
   }
 }
 
-/* -------------------------------------------------- source / result split ---
-   Two code panes side by side: what you write, and what the transpiler emits.
-   Collapses to stacked panes before either pane gets too narrow to read.
-   -------------------------------------------------------------------------- */
-
-.split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin: 1.5rem 0;
-}
-
-@media (max-width: 60rem) {
-  .split {
-    grid-template-columns: 1fr;
-  }
-}
-
+/* The generated-code box (the tour's right column). */
 .pane {
   background: var(--bg-code);
   min-width: 0;
@@ -964,12 +955,6 @@ pre code .pp {
   letter-spacing: 0;
 }
 
-/* The generated pane carries the accent so the eye lands on the result. */
-.pane + .pane .pane-head {
-  color: var(--ink-muted);
-  box-shadow: inset 0 2px 0 var(--accent);
-}
-
 .pane pre {
   margin: 0;
   border: 0;
@@ -978,55 +963,6 @@ pre code .pp {
   flex: 1;
   font-size: 0.795rem;
   line-height: 1.55;
-}
-
-/* ---------------------------------------------------------------- pairs ---- */
-
-.pair {
-  margin-top: 2.75rem;
-}
-
-.pair:first-of-type {
-  margin-top: 2rem;
-}
-
-.pair-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.6rem 1rem;
-}
-
-.pair-head h3 {
-  margin: 0;
-}
-
-/* Cost badge beside a pair heading. Inline <code> inside it must not draw its
-   own chrome, or you get a box inside a box. */
-.chip {
-  flex: none;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--ink-muted);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-line);
-  border-radius: 999px;
-  padding: 0.2rem 0.62rem;
-}
-
-.chip code {
-  background: none;
-  border: 0;
-  padding: 0;
-  color: inherit;
-  font-size: 1em;
-  white-space: nowrap;
-}
-
-.pair-note {
-  font-size: 0.9rem;
-  color: var(--ink-muted);
-  margin: -0.4rem 0 0;
 }
 
 /* --------------------------------------------------------- hero specifics ---- */
@@ -1327,10 +1263,7 @@ summary .hint {
     gap: 1.25rem 1.75rem;
   }
 
-  .stat-value {
-    font-size: 1.45rem;
   }
-}
 
 /* -------------------------------------------------------------- print ---- */
 

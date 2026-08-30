@@ -11,7 +11,7 @@
 #include "OZString_ozh.h"
 #include "OZTimer_ozh.h"
 
-OZ_SLAB_DEFINE(oz_slab_Thermometer, sizeof(struct Thermometer), 1, 4);
+OZ_SLAB_DEFINE(oz_slab_Thermometer, sizeof(struct Thermometer), 2, 4);
 
 OZ_SLAB_DEFINE(oz_slab_Hygrometer, sizeof(struct Hygrometer), 1, 4);
 
@@ -23,13 +23,6 @@ OZ_SLAB_DEFINE(oz_slab_Thermostat, sizeof(struct Thermostat), 1, 4);
 
 #include <zephyr/kernel.h>
 #include <zephyr/zbus/zbus.h>
-struct msg_setpoint {
-        int celsius;
-}
-;
-/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */
-ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
-                 ZBUS_OBSERVERS(lis_setpoint), ZBUS_MSG_INIT(0));
 /* @protocol Sensor — see oz_dispatch.h */
 /* @interface Thermometer — see Thermometer_ozh.h */
 /* @implementation Thermometer */
@@ -167,6 +160,13 @@ void Thermostat_dealloc(struct Thermostat *self)
 
 
 /* @end Thermostat */
+struct msg_setpoint {
+        int celsius;
+}
+;
+/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */
+ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
+                 ZBUS_OBSERVERS(lis_setpoint), ZBUS_MSG_INIT(0));
 static struct Thermostat * unit;
 /* A plain C callback that talks to the object. */
 static void on_setpoint(const struct zbus_channel * chan)
@@ -176,3 +176,12 @@ static void on_setpoint(const struct zbus_channel * chan)
 }
 
 ZBUS_LISTENER_DEFINE(lis_setpoint, on_setpoint);
+int main(void)
+{
+	struct Thermometer * probe = (struct Thermometer *)OZObject_init((struct OZObject *)Thermometer_alloc());
+	unit = Thermostat_initWithProbe_pollEvery_(Thermostat_alloc(), probe, 1000);
+	Thermostat_setSetpoint_(unit, 21);
+	OZLog("worst=%d heating=%d", Thermostat_worstReading(unit), Thermostat_isHeating(unit));
+	OZObject_release((struct OZObject *)probe);
+	return 0;
+}

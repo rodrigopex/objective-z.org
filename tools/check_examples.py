@@ -69,12 +69,6 @@ def main():
     E = ROOT / "examples"
     ok = True
 
-    ok &= check("hero source", pane_text(page, '<section class="hero">'),
-                [E / "hero/hero.m"])
-    ok &= check("hero generated", pane_text(page, '<span>generated C</span>'),
-                [E / "hero/generated/Thermostat_ozh.h",
-                 E / "hero/generated/Thermostat_ozm.c",
-                 E / "hero/generated/hero_ozm.c"])
     ok &= check("tour source", pane_text(page, 'class="tour-code"'),
                 [E / "tour/thermostat.m"])
     ok &= check("tour generated", pane_text(page, 'id="tour-file"'),

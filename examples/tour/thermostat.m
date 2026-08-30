@@ -7,14 +7,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/zbus/zbus.h>
 
-struct msg_setpoint {
-        int celsius;
-};
-
-/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */
-ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
-                 ZBUS_OBSERVERS(lis_setpoint), ZBUS_MSG_INIT(0));
-
 @protocol Sensor
 - (int)read;
 @end
@@ -117,6 +109,14 @@ ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
 
 @end
 
+struct msg_setpoint {
+        int celsius;
+};
+
+/* A Zephyr macro, used verbatim in an Objective-C file. No binding layer. */
+ZBUS_CHAN_DEFINE(chan_setpoint, struct msg_setpoint, NULL, NULL,
+                 ZBUS_OBSERVERS(lis_setpoint), ZBUS_MSG_INIT(0));
+
 static Thermostat *unit;
 
 /* A plain C callback that talks to the object. */
@@ -128,3 +128,14 @@ static void on_setpoint(const struct zbus_channel *chan)
 }
 
 ZBUS_LISTENER_DEFINE(lis_setpoint, on_setpoint);
+
+int main(void)
+{
+        Thermometer *probe = [[Thermometer alloc] init];
+
+        unit = [[Thermostat alloc] initWithProbe:probe pollEvery:1000];
+        [unit setSetpoint:21];
+
+        OZLog("worst=%d heating=%d", [unit worstReading], [unit isHeating]);
+        return 0;
+}
