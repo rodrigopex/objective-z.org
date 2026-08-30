@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://objective-z.org/sitemap.xml

@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Objective-Z — Objective-C transpiler for Zephyr RTOS</title>
+<meta name="description" content="Objective-Z transpiles Objective-C to plain, auditable C for Zephyr RTOS. No ObjC runtime, no separate compiler, no FFI bindings — and 28% smaller firmware than equivalent C++.">
+
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<link rel="canonical" href="https://objective-z.org/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141d26" media="(prefers-color-scheme: dark)">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Objective-Z">
+<meta property="og:title" content="Objective-Z — Objective-C transpiler for Zephyr RTOS">
+<meta property="og:description" content="Write Objective-C, ship plain C. Classes, protocols and ARC on Zephyr with no runtime, no separate compiler, and 28% smaller firmware than C++.">
+<meta property="og:url" content="https://objective-z.org/">
+<meta property="og:image" content="https://objective-z.org/assets/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Objective-Z — Objective-C transpiler for Zephyr RTOS. 28% smaller firmware than C++.">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="stylesheet" href="/css/main.css">
+<script src="/js/theme.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="7" fill="#2c3d4f"></rect>
+        <path d="M9.5 10.5H22.5L9.5 21.5H22.5" fill="none" stroke="#d3cc4f" stroke-width="3.1" stroke-linecap="square"></path>
+      </svg>
+      Objective-Z
+    </a>
+
+    <button type="button" class="nav-toggle" id="nav-btn" aria-controls="nav" aria-expanded="true" hidden>Menu</button>
+
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#alternatives">Alternatives</a>
+      <a href="#vs-cpp">vs C++</a>
+      <a href="#features">Features</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="https://github.com/rodrigopex/objective-z" rel="noopener noreferrer">GitHub</a>
+    </nav>
+
+    <button type="button" class="theme-btn" id="theme-btn" hidden>
+      <svg class="theme-icon-light" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M12.9 3.1l-1.4 1.4M4.5 11.5l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path>
+      </svg>
+      <svg class="theme-icon-dark" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M13.2 10.4A5.6 5.6 0 0 1 6 3.2a5.6 5.6 0 1 0 7.2 7.2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"></path>
+      </svg>
+      <svg class="theme-icon-auto" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+        <path d="M8 2.4a5.6 5.6 0 0 1 0 11.2z" fill="currentColor"></path>
+      </svg>
+      <span class="theme-label">System</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero">
+  <div class="wrap">
+    <p class="badge">v0.5.99 · pre-1.0 — APIs may change</p>
+    <h1>Objective-C for Zephyr,<br>compiled as plain C.</h1>
+    <p class="hero-tagline">Objective-Z transpiles <code>.m</code> sources to readable C via Clang AST analysis. No Objective-C runtime. No second compiler. No FFI bindings.</p>
+    <p class="hero-pitch">Your team gains classes, protocols, ARC and deterministic dispatch — and the toolchain never sees anything but C. Packaged as a Zephyr module with a zero-cost platform abstraction layer.</p>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#quickstart">Get started</a>
+      <a class="btn" href="https://github.com/rodrigopex/objective-z" rel="noopener noreferrer">View on GitHub</a>
+      <a class="btn" href="#vs-cpp">Compare with C++</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value">−28%</span>
+        <span class="stat-label">firmware size vs equivalent C++ at <code>-O2</code></span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">12</span>
+        <span class="stat-label">cycles per method call — same as a direct C call</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">0 B</span>
+        <span class="stat-label">heap: slab pools in <code>.bss</code>, vtables in <code>.rodata</code></span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">0</span>
+        <span class="stat-label">bindings — the whole Zephyr API is directly callable</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>A build step, not a runtime</h2>
+    <p class="lede">The transpiler runs before the compiler. It reads a Clang JSON AST of your Objective-C, resolves every dispatch it can at build time, and emits ordinary <code>.h</code>/<code>.c</code> files that GCC compiles like any other Zephyr source.</p>
+
+    <div class="pipeline">
+      <svg viewBox="0 0 730 144" role="img" aria-labelledby="pipe-title pipe-desc">
+        <title id="pipe-title">The Objective-Z build pipeline</title>
+        <desc id="pipe-desc">Objective-C .m sources become a Clang JSON AST, which oz_transpile processes in three passes — collect, resolve, emit — producing .h and .c files that GCC compiles into the final binary.</desc>
+
+        <rect class="pipe-box" x="0.5" y="20.5" width="103" height="43" rx="5"></rect>
+        <text class="pipe-label" x="52" y="46" text-anchor="middle">.m sources</text>
+
+        <rect class="pipe-box" x="126.5" y="20.5" width="139" height="43" rx="5"></rect>
+        <text class="pipe-label" x="196" y="46" text-anchor="middle">Clang JSON AST</text>
+
+        <rect class="pipe-box pipe-box-accent" x="288.5" y="20.5" width="123" height="43" rx="5"></rect>
+        <text class="pipe-label" x="350" y="46" text-anchor="middle">oz_transpile</text>
+
+        <rect class="pipe-box" x="434.5" y="20.5" width="91" height="43" rx="5"></rect>
+        <text class="pipe-label" x="480" y="46" text-anchor="middle">.h + .c</text>
+
+        <rect class="pipe-box" x="548.5" y="20.5" width="71" height="43" rx="5"></rect>
+        <text class="pipe-label" x="584" y="46" text-anchor="middle">GCC</text>
+
+        <rect class="pipe-box" x="642.5" y="20.5" width="87" height="43" rx="5"></rect>
+        <text class="pipe-label" x="686" y="46" text-anchor="middle">binary</text>
+
+        <path class="pipe-arrow" d="M107 42h10" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M117 38l8 4-8 4z"></path>
+        <path class="pipe-arrow" d="M269 42h10" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M279 38l8 4-8 4z"></path>
+        <path class="pipe-arrow" d="M415 42h10" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M425 38l8 4-8 4z"></path>
+        <path class="pipe-arrow" d="M529 42h10" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M539 38l8 4-8 4z"></path>
+        <path class="pipe-arrow" d="M623 42h10" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M633 38l8 4-8 4z"></path>
+
+        <path class="pipe-arrow" d="M350 64v32" stroke-width="1.3" stroke-dasharray="3 3"></path>
+
+        <rect class="pipe-box" x="234.5" y="100.5" width="67" height="32" rx="5"></rect>
+        <text class="pipe-label-sm" x="268" y="120" text-anchor="middle">collect</text>
+        <rect class="pipe-box" x="316.5" y="100.5" width="67" height="32" rx="5"></rect>
+        <text class="pipe-label-sm" x="350" y="120" text-anchor="middle">resolve</text>
+        <rect class="pipe-box" x="398.5" y="100.5" width="67" height="32" rx="5"></rect>
+        <text class="pipe-label-sm" x="432" y="120" text-anchor="middle">emit</text>
+
+        <path class="pipe-arrow" d="M304 116h6" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M310 113l6 3-6 3z"></path>
+        <path class="pipe-arrow" d="M386 116h6" stroke-width="1.3"></path>
+        <path class="pipe-arrow-head" d="M392 113l6 3-6 3z"></path>
+      </svg>
+    </div>
+
+    <div class="feature-grid">
+      <div>
+        <h3>Static-first by design</h3>
+        <p>Every existing Objective-C runtime — Apple <code>libobjc</code>, GNUstep <code>libobjc2</code>, ObjFW, mulle-objc — <code>malloc</code>s its dispatch tables, class tables and instances at runtime. That is fine on a phone and wrong on an MCU with 64–512 KB of RAM and no MMU.</p>
+      </div>
+      <div>
+        <h3>Dispatch tables in FLASH</h3>
+        <p>Objective-Z emits <code>const</code> vtable arrays into <code>.rodata</code>, indexed by <code>class_id</code> — zero RAM cost. When the receiver type is known at transpile time, a protocol call collapses into a direct function call.</p>
+      </div>
+      <div>
+        <h3>Objects from slab pools</h3>
+        <p>Instances come from per-class <code>k_mem_slab</code> pools in <code>.bss</code>, auto-sized from AST analysis. No <code>malloc</code>, no fragmentation, no allocator metadata per object.</p>
+      </div>
+      <div>
+        <h3>No dynamic magic</h3>
+        <p>KVO, swizzling, dynamic class creation, associated objects, weak references and message forwarding are gone — they all need unbounded runtime allocation. What remains is what can be resolved at build time: classes, protocols, categories, properties, blocks, ARC.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alternatives">
+  <div class="wrap">
+    <p class="eyebrow">The landscape</p>
+    <h2>Why not one of the other languages?</h2>
+    <p class="lede">Several languages promise better abstractions over C for embedded work. We evaluated each against the reality of building on Zephyr, where the entire ecosystem — kernel, drivers, build system, macros — is C.</p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="chip">Separate compiler</span>
+        <h3><a href="https://github.com/zephyrproject-rtos/zephyr-lang-rust" rel="noopener noreferrer">Rust</a></h3>
+        <p>An amazing language, but adopting it means emigrating, not learning new syntax. The borrow checker rewires how developers think about lifetimes. The toolchain is a separate compiler from Zephyr's, creating two-ABI friction, and every kernel API needs FFI bindings that break on upstream updates. Kernel-level development is effectively off-limits, and binaries are harder to audit for WCET.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">Breaks the macros</span>
+        <h3><a href="https://docs.zephyrproject.org/latest/develop/languages/cpp/index.html" rel="noopener noreferrer">C++</a></h3>
+        <p>Looks C-compatible but isn't. Zephyr's macro-heavy API — <code>K_THREAD_DEFINE</code>, <code>K_SEM_DEFINE</code>, <code>DEVICE_DT_DEFINE</code> — relies on C-specific preprocessor behavior; compiling with <code>g++</code> changes the language under the macros. Beyond that, C++ has fractured into eras: a developer comfortable with C++03 faces a nearly foreign language in C++20/23. It keeps trying to become something else, which is bad for teams rooted in C.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">No OOP vocabulary</span>
+        <h3><a href="https://github.com/nodecum/zig-zephyr" rel="noopener noreferrer">Zig</a></h3>
+        <p>The most sympathetic "better C": no hidden control flow, <code>comptime</code> instead of macros, good C interop. But it shares Rust's separate-compiler problem and deliberately does not support OOP — no classes, no inheritance, no method dispatch. Approximating interfaces requires acrobatics the language doesn't enforce.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">Different language</span>
+        <h3><a href="https://github.com/EmbeddedNim/nephyr" rel="noopener noreferrer">Nim</a></h3>
+        <p>The closest competitor: it also transpiles to C, has <code>--mm:arc</code> for deterministic memory, and a Zephyr wrapper. But despite the C output it is a completely different language — Python-inspired, significant whitespace, its own module and metaprogramming model. Zephyr's C macros don't pass through Nim's FFI cleanly, so bindings must manually replicate what the macros expand to. Its OOP model uses GC'd reference types by default, and the generated C is Nim-idiomatic rather than human-auditable.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">Hobbled subset</span>
+        <h3><a href="https://github.com/swiftlang/swift-embedded-examples" rel="noopener noreferrer">Swift</a></h3>
+        <p>The obvious question given Objective-C heritage. Embedded Swift strips runtime reflection and existentials to reach microcontrollers, and has experimental Zephyr integration. But it is still a separate LLVM-based compiler with its own ABI, the embedded subset is experimental, and it disables the very features that make Swift feel like Swift. You get a hobbled Swift instead of full Objective-C lowered to clean C.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">No Zephyr support</span>
+        <h3><a href="https://github.com/zephyr-ada/ada-project-example" rel="noopener noreferrer">Ada / SPARK</a></h3>
+        <p>The establishment answer for safety-critical embedded, with proven formal verification, and it deserves respect. But there is no official Zephyr support — only a proof-of-concept requiring a custom SDK rebuild with GNAT enabled. The language, toolchain and ecosystem are unfamiliar to teams coming from C, and the adoption cost is enormous.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">Interpreter + heap</span>
+        <h3><a href="https://github.com/rodrigopex/lua_zephyr" rel="noopener noreferrer">Lua</a></h3>
+        <p>A tiny interpreter, easy to embed, widely used for IoT scripting. But it is interpreted — every instruction pays a runtime dispatch cost that destroys WCET analyzability, and the VM heap-allocates tables, strings and closures. You can strip it down, but you still pay for an interpreter loop where you need deterministic compiled code. It adds a scripting layer on top of C rather than improving the C itself.</p>
+      </div>
+
+      <div class="card">
+        <span class="chip">Garbage collector</span>
+        <h3><a href="https://tinygo.org" rel="noopener noreferrer">Go / TinyGo</a></h3>
+        <p>The garbage collector is a one-line disqualifier for zero-heap, deterministic, ISR-safe embedded systems.</p>
+      </div>
+    </div>
+
+    <div class="panel panel-strong">
+      <h3>They all share one root cause</h3>
+      <p>A separate compiler (Rust, Zig, Swift, Ada). Broken macro compatibility (all of them — even C++ and Nim). An unfamiliar language model (Rust, Nim, Ada). A hobbled feature subset (Swift). An interpreter with heap allocation (Lua). A garbage collector (Go). Different failures, one cause: <strong>each asks the embedded C team to leave C.</strong></p>
+      <p>Objective-Z doesn't. The developer writes Objective-C — a strict superset of C — and the entire Zephyr API surface, macros and devicetree accessors included, is directly visible and usable in the <code>.m</code> source with zero bindings. The transpiler converts it to plain, auditable C. The compiler only ever sees C. The linker only ever sees C.</p>
+      <p>No new compiler. No FFI bindings. No interpreter. No garbage collector. No moving target. No unfamiliar syntax. The team gains classes, protocols, ARC-based RAII and deterministic dispatch without leaving the world it already understands.</p>
+    </div>
+  </div>
+</section>
+
+<section id="vs-cpp">
+  <div class="wrap">
+    <p class="eyebrow">Head to head</p>
+    <h2>Objective-Z vs C++</h2>
+    <p class="lede">C++ is the alternative most embedded teams reach for first, so it deserves the closest look. The short version: comparable speed, materially smaller firmware, and none of the macro or dialect friction.</p>
+
+    <div class="feature-grid">
+      <div>
+        <h3>The macros are the problem</h3>
+        <p>Zephyr's API is preprocessor-driven. <code>K_THREAD_DEFINE</code>, <code>K_SEM_DEFINE</code> and <code>DEVICE_DT_DEFINE</code> depend on C-specific preprocessor and linker-section behavior. Building with <code>g++</code> changes the language underneath those macros — so the parts of Zephyr you most want to touch are the parts that fight back.</p>
+        <p>Objective-C is a strict superset of C. The macros expand exactly as they do in C, because the file <em>is</em> C plus objects.</p>
+      </div>
+      <div>
+        <h3>Which C++ does your team know?</h3>
+        <p>C++ has grown into distinct eras. A developer fluent in C++03 meets a nearly foreign language in C++20/23 — different idioms, different ownership vocabulary, different error messages. Every hire and every code review has to negotiate which dialect the codebase speaks.</p>
+        <p>Objective-C's object model has been stable for decades, and the subset Objective-Z supports is deliberately small: classes, protocols, categories, properties, blocks, ARC. There is no next edition to migrate to.</p>
+      </div>
+      <div>
+        <h3>The output is reviewable</h3>
+        <p>Transpiled C is ordinary C — a named function per method, a <code>const</code> array per vtable, a slab pool per class. A reviewer, a static analyzer, or a certification auditor reads the same code the compiler does.</p>
+        <p>Template-heavy C++ gives you object code whose shape you infer rather than read.</p>
+      </div>
+      <div>
+        <h3>One toolchain, unchanged</h3>
+        <p>No compiler swap, no <code>CONFIG_CPLUSPLUS</code>, no exception or RTTI configuration, no libstdc++ footprint decisions, no ABI seam between your code and the kernel's. The build gains one Python step and keeps GCC.</p>
+      </div>
+    </div>
+
+    <h3 id="speed">Speed</h3>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption>Cycle counts — lower is better. Both sides compiled <code>-O2</code>.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Operation</th>
+            <th scope="col" class="num">C++</th>
+            <th scope="col" class="num">Objective-Z</th>
+            <th scope="col">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Static / direct call</th><td class="num">12</td><td class="num">12</td><td class="notes">Both resolve at compile time</td></tr>
+          <tr><th scope="row">Virtual / vtable dispatch</th><td class="num">14</td><td class="num">21</td><td class="notes">OZ: <code>const</code> array in <code>.rodata</code>; C++: vptr indirection</td></tr>
+          <tr><th scope="row">Slab alloc + init + release</th><td class="num">105</td><td class="num bad">215</td><td class="notes">C++ figure is placement-new from a slab</td></tr>
+          <tr><th scope="row">Atomic inc (retain)</th><td class="num">7</td><td class="num bad">22</td><td class="notes">Both inline atomics</td></tr>
+          <tr><th scope="row">retain + release pair</th><td class="num">17</td><td class="num bad">44</td><td class="notes"></td></tr>
+          <tr><th scope="row">Property get (nonatomic)</th><td class="num">12</td><td class="num">12</td><td class="notes"></td></tr>
+          <tr><th scope="row">Property get (atomic, <code>k_spinlock</code>)</th><td class="num">12</td><td class="num good">10</td><td class="notes">Same Zephyr primitive on both sides</td></tr>
+          <tr><th scope="row"><code>@synchronized</code> (<code>k_spinlock</code>)</th><td class="num">15</td><td class="num bad">266</td><td class="notes">OZ: RAII <code>OZSpinLock</code> alloc + free</td></tr>
+          <tr><th scope="row">Block / lambda (non-capturing)</th><td class="num">12</td><td class="num">12</td><td class="notes">Both compile to function pointers</td></tr>
+          <tr><th scope="row"><code>std::function</code> (int capture)</th><td class="num">16</td><td class="num dash">—</td><td class="notes">No Objective-Z equivalent</td></tr>
+          <tr><th scope="row">Raw <code>int32_t[]</code> sum (10 elems)</th><td class="num">81</td><td class="num">99</td><td class="notes">Both raw C arrays, no boxing</td></tr>
+          <tr><th scope="row">String array loop + length (10 items)</th><td class="num">263</td><td class="num bad">483</td><td class="notes">Fair: both object arrays with a method call per element</td></tr>
+          <tr><th scope="row">String iterator (virtual)</th><td class="num">211</td><td class="num bad">341</td><td class="notes">Fair: both virtual dispatch per step</td></tr>
+          <tr><th scope="row"><code>dynamic_cast</code> (hit) / <code>isKindOfClass</code></th><td class="num">12</td><td class="num dash">—</td><td class="notes">OZ introspection is a C API, not yet an ObjC method</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">With compile-time dispatch, most protocol calls resolve to direct function calls — 12 cycles, identical to static dispatch. The 21-cycle <code>const</code> vtable path is only taken by genuinely polymorphic <code>id</code>-typed receivers.</p>
+
+    <h3 id="memory">Memory per object</h3>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption>Bytes per object — lower is better.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Metric</th>
+            <th scope="col" class="num">C++</th>
+            <th scope="col" class="num">Objective-Z</th>
+            <th scope="col">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Base object <code>sizeof</code></th><td class="num">8</td><td class="num">8</td><td class="notes">Both: metadata + refcount</td></tr>
+          <tr><th scope="row">Slab alloc overhead</th><td class="num dash">n/a</td><td class="num good">0</td><td class="notes">OZ: block size equals <code>sizeof</code></td></tr>
+          <tr><th scope="row">Heap alloc overhead</th><td class="num">4</td><td class="num dash">n/a</td><td class="notes">C++ <code>sys_heap</code> chunk header</td></tr>
+          <tr><th scope="row"><code>shared_ptr</code> control block</th><td class="num">12</td><td class="num good">0</td><td class="notes">OZ keeps the refcount inline</td></tr>
+          <tr><th scope="row">String object — <code>OZString</code> vs <code>SimpleString</code></th><td class="num">12</td><td class="num bad">20</td><td class="notes">C++: vptr + data + len; OZ carries more per instance</td></tr>
+          <tr><th scope="row">Fixed point — <code>OZQ31</code></th><td class="num dash">—</td><td class="num">16</td><td class="notes">Q31 + shift, no C++ counterpart in the benchmark</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption>Allocation cost including allocator metadata. C and C++ use a dedicated 8 KB <code>sys_heap</code>; Objective-Z uses per-class <code>k_mem_slab</code> pools.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Allocation</th>
+            <th scope="col" class="num">C</th>
+            <th scope="col" class="num">C++</th>
+            <th scope="col" class="num">Objective-Z</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Base</th><td class="num">16 B</td><td class="num">16 B</td><td class="num good">8 B</td></tr>
+          <tr><th scope="row">Child (+ 1 int)</th><td class="num">16 B</td><td class="num">16 B</td><td class="num good">12 B</td></tr>
+          <tr><th scope="row">GrandChild (+ 2 ints)</th><td class="num">24 B</td><td class="num">24 B</td><td class="num good">16 B</td></tr>
+          <tr><th scope="row">20 × Child</th><td class="num">320 B</td><td class="num">320 B</td><td class="num good">240 B</td></tr>
+          <tr><th scope="row">20 × GrandChild</th><td class="num">480 B</td><td class="num">480 B</td><td class="num good">320 B</td></tr>
+          <tr class="total"><th scope="row">Per GrandChild, average</th><td class="num">24 B</td><td class="num">24 B</td><td class="num good">16 B</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Object <code>sizeof</code> is identical across all three — each embeds a 4 B dispatch field plus a 4 B refcount; the transpiler uses an <code>enum oz_class_id</code> index where C++ uses a vptr. The saving is purely allocator metadata: 33% less memory per object at 20 objects.</p>
+
+    <h3 id="footprint">Firmware footprint</h3>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <caption>Same benchmark application built both ways. Negative diff favors Objective-Z.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Benchmark</th>
+            <th scope="col">Metric</th>
+            <th scope="col" class="num">C++</th>
+            <th scope="col" class="num">Objective-Z</th>
+            <th scope="col" class="num">Diff</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" rowspan="6">Speed (<code>-O2</code>)</th><td>text</td><td class="num">50,588</td><td class="num">34,272</td><td class="num good">−32%</td></tr>
+          <tr><td>data</td><td class="num">312</td><td class="num">768</td><td class="num bad">+146%</td></tr>
+          <tr><td>bss</td><td class="num">9,861</td><td class="num">8,605</td><td class="num good">−13%</td></tr>
+          <tr class="total"><td>total</td><td class="num">60,761</td><td class="num">43,645</td><td class="num good">−28%</td></tr>
+          <tr class="total"><td>Flash</td><td class="num">50,900</td><td class="num">35,040</td><td class="num good">−31%</td></tr>
+          <tr class="total"><td>RAM</td><td class="num">10,173</td><td class="num">9,373</td><td class="num good">−8%</td></tr>
+          <tr><th scope="row" rowspan="6">Memory (<code>-Os</code>)</th><td>text</td><td class="num">22,840</td><td class="num">21,344</td><td class="num good">−7%</td></tr>
+          <tr><td>data</td><td class="num">180</td><td class="num">180</td><td class="num">0%</td></tr>
+          <tr><td>bss</td><td class="num">15,558</td><td class="num">7,344</td><td class="num good">−53%</td></tr>
+          <tr class="total"><td>total</td><td class="num">38,578</td><td class="num">28,868</td><td class="num good">−25%</td></tr>
+          <tr class="total"><td>Flash</td><td class="num">23,020</td><td class="num">21,524</td><td class="num good">−6%</td></tr>
+          <tr class="total"><td>RAM</td><td class="num">15,738</td><td class="num">7,524</td><td class="num good">−52%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">All figures in bytes. Objective-Z firmware is 28% smaller at <code>-O2</code> (43 KB vs 60 KB) and 25% smaller at <code>-Os</code> (28 KB vs 38 KB). Flash is 31% lower at <code>-O2</code>; RAM is 52% lower at <code>-Os</code>, because slab pools in <code>.bss</code> replace a <code>sys_heap</code>. C++ template and STL inlining is what inflates <code>text</code>.</p>
+
+    <div class="panel">
+      <h3>Where C++ still wins</h3>
+      <ul class="tight">
+        <li><strong><code>@synchronized</code> is expensive</strong> — 266 cycles against 15, because the RAII <code>OZSpinLock</code> is allocated and freed. The underlying <code>k_spinlock</code> is 15 cycles on both sides; reach for it directly on a hot path.</li>
+        <li><strong>Reference counting costs more</strong> — 22 cycles to retain vs 7 for a raw <code>atomic_fetch_add</code>, and 44 vs 17 for a retain/release pair. The gap is a null check plus a real function call.</li>
+        <li><strong>Placement-new from a slab is 2× faster</strong> — 105 cycles vs 215. The extra Objective-Z cycles are the <code>init</code> vtable call and the ARC release.</li>
+        <li><strong>Object-array iteration is ~1.8× slower</strong> — 483 cycles vs 263 for a ten-element string loop with a method call per element.</li>
+        <li><strong>No equivalent for some C++ tools</strong> — <code>std::function</code> with captures, <code>dynamic_cast</code>, and multiple inheritance have no Objective-Z counterpart. Introspection exists only as a C API (<code>oz_isKindOfClass</code>, <code>oz_name</code>).</li>
+        <li><strong>Capturing blocks are rejected</strong> — a block that captures a local is a transpile-time diagnostic, where a C++ lambda would just work.</li>
+      </ul>
+    </div>
+
+    <p class="note">Method: all benchmarks on an <strong>nRF52833 DK</strong> (ARM Cortex-M4F @ 64 MHz) using the DWT cycle counter, overhead-calibrated, single inheritance only. The Objective-Z benchmark is pure Objective-C transpiled to C. Full per-section results, including the allocation, dispatch, lifecycle, refcounting and collections breakdowns, are in the <a href="https://github.com/rodrigopex/objective-z#benchmark" rel="noopener noreferrer">project README</a>.</p>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow">Features</p>
+    <h2>What the subset gives you</h2>
+    <p class="lede">Everything that can be resolved at build time is in. Everything that would need unbounded runtime allocation is out.</p>
+
+    <div class="feature-grid">
+      <div>
+        <h3>Dispatch</h3>
+        <ul class="tight">
+          <li><strong>Static dispatch</strong> — direct C function calls for non-protocol methods (12 cycles)</li>
+          <li><strong>Compile-time dispatch</strong> — protocol calls resolved to direct calls when the receiver type is known (12 cycles)</li>
+          <li><strong>Protocol vtable dispatch</strong> — <code>const</code> arrays in <code>.rodata</code>, zero RAM; 21-cycle polymorphic fallback for <code>id</code> receivers</li>
+          <li><strong>Class methods</strong> — plain static function calls</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Memory management</h3>
+        <ul class="tight">
+          <li><strong>Compile-time ARC</strong> — scope-based retain/release, auto-dealloc, <code>break</code>/<code>continue</code> cleanup</li>
+          <li><strong>Per-class slab pools</strong> — auto-sized from AST analysis, zero heap overhead</li>
+          <li><strong><code>@autoreleasepool</code></strong> — scoped drain points for loops and worker threads</li>
+          <li><strong>Foundation classes</strong> — <code>OZString</code>, <code>OZArray</code>, <code>OZDictionary</code>, <code>OZQ31</code> with fast enumeration</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Language</h3>
+        <ul class="tight">
+          <li><strong>Categories</strong> — merged at AST collection time</li>
+          <li><strong><code>@property</code> / <code>@synthesize</code></strong> — atomic and strong semantics</li>
+          <li><strong><code>@synchronized</code></strong> — RAII spinlock via <code>OZSpinLock</code></li>
+          <li><strong>Blocks</strong> — non-capturing blocks become static C functions; <code>__block</code> variables are promoted to file scope</li>
+          <li><strong>Fast enumeration</strong> — <code>for (id obj in collection)</code> via <code>IteratorProtocol</code></li>
+          <li><strong>Literals</strong> — <code>@42</code>, <code>@3.14f</code>, <code>@YES</code>, <code>@[a, b]</code>, <code>@{k: v}</code>, and subscripting</li>
+          <li><strong>Lightweight generics</strong> — typed collections</li>
+          <li><strong><code>+initialize</code></strong> — auto-called before <code>main()</code> via <code>SYS_INIT</code></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Tooling &amp; platform</h3>
+        <ul class="tight">
+          <li><strong>Three-pass transpiler</strong> — Clang JSON AST → collect → resolve → emit → pure C</li>
+          <li><strong>Platform abstraction layer</strong> — zero-cost <code>static inline</code> with Zephyr and host backends; every PAL function vanishes at <code>-O1</code> and above</li>
+          <li><strong>Zephyr-native primitives</strong> — <code>k_mem_slab</code>, <code>SYS_INIT</code>, <code>k_spinlock_t</code>, <code>atomic_t</code>; no libc <code>malloc</code> dependency</li>
+          <li><strong>clangd support</strong> — auto-generated <code>compile_commands.json</code></li>
+          <li><strong>Architectures</strong> — ARM Cortex-M, Cortex-A, and RISC-V 32/64 (LLVM Clang required)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 id="foundation">Foundation classes</h3>
+    <div class="table-scroll" tabindex="0">
+      <table>
+        <thead>
+          <tr><th scope="col">Class</th><th scope="col">Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row"><code>OZObject</code></th><td class="notes">Root class — alloc, init, dealloc, retain/release, isEqual</td></tr>
+          <tr><th scope="row"><code>OZString</code></th><td class="notes">Immutable strings — cStr, length, isEqual</td></tr>
+          <tr><th scope="row"><code>OZMutableString</code></th><td class="notes">Mutable strings — appendString, appendFormat</td></tr>
+          <tr><th scope="row"><code>OZArray</code></th><td class="notes">Immutable arrays — count, objectAtIndex, for-in</td></tr>
+          <tr><th scope="row"><code>OZDictionary</code></th><td class="notes">Immutable dictionaries — count, objectForKey, for-in</td></tr>
+          <tr><th scope="row"><code>OZQ31</code></th><td class="notes">Q31+shift fixed point — Zephyr <code>sensor_decode</code> interop, arithmetic</td></tr>
+          <tr><th scope="row"><code>OZHeap</code></th><td class="notes">Dynamic heap allocator — initWithBuffer, allocWithHeap</td></tr>
+          <tr><th scope="row"><code>OZSpinLock</code></th><td class="notes">RAII spinlock backing <code>@synchronized</code> blocks</td></tr>
+          <tr><th scope="row"><code>OZTimer</code></th><td class="notes">Zephyr <code>k_timer</code> wrapper — block expiry, strong userdata</td></tr>
+          <tr><th scope="row"><code>OZDefer</code></th><td class="notes">Scope guard for deterministic cleanup</td></tr>
+          <tr><th scope="row"><code>OZLog</code></th><td class="notes">printf-style logging with a <code>%@</code> object specifier</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <p class="eyebrow">Quick start</p>
+    <h2>Add it to a Zephyr application</h2>
+    <p class="lede">Objective-Z is a Zephyr module. Four files and one CMake call.</p>
+
+    <ol class="steps">
+      <li>
+        <h3>Add the module to your west manifest</h3>
+        <span class="filename">west.yml</span>
+<pre><code>manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: main
+      import:
+        name-allowlist:
+          - cmsis
+
+    - name: objective-z
+      url: https://github.com/rodrigopex/objective-z/
+      revision: main
+      path: objective-z
+
+  self:
+    path: my_app</code></pre>
+        <p>Then run <code>west update</code> to fetch it.</p>
+      </li>
+
+      <li>
+        <h3>Point CMake at your <code>.m</code> sources</h3>
+        <span class="filename">CMakeLists.txt</span>
+<pre><code>cmake_minimum_required(VERSION 3.20.0)
+
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+project(my_app)
+
+# Transpile .m sources to C (ARC always enabled)
+objz_transpile_sources(app src/main.m)</code></pre>
+        <p>The call accepts <code>ROOT_CLASS</code> (default <code>OZObject</code>), <code>POOL_SIZES</code> to override per-class slab sizing, and <code>INCLUDE_DIRS</code> for extra AST include paths.</p>
+      </li>
+
+      <li>
+        <h3>Enable the Kconfig option</h3>
+        <span class="filename">prj.conf</span>
+<pre><code>CONFIG_OBJZ=y</code></pre>
+        <p><code>CONFIG_OBJZ</code> is the only option. It enables the transpiler pipeline and auto-selects <code>STATIC_INIT_GNU</code>. Foundation classes are included automatically and slab pools are generated for every class found in the AST.</p>
+      </li>
+
+      <li>
+        <h3>Write Objective-C</h3>
+        <span class="filename">src/main.m</span>
+<pre><code>#import &lt;Foundation/Foundation.h&gt;
+
+@interface Sensor: OZObject {
+    int _value;
+}
+- (void)setValue:(int)v;
+- (int)value;
+@end
+
+@implementation Sensor
+- (void)setValue:(int)v { _value = v; }
+- (int)value { return _value; }
+
+- (void)dealloc
+{
+    OZLog("Sensor dealloc (value=%d)", _value);
+}
+@end
+
+int main(void)
+{
+    Sensor *s = [[Sensor alloc] init];
+    [s setValue:42];
+    OZLog("value=%d", [s value]);
+    /* ARC releases s here -&gt; dealloc fires */
+    return 0;
+}</code></pre>
+        <p>This becomes <code>Sensor_setValue(self, v)</code>, <code>Sensor_value(self)</code> and an <code>OZObject_slab_alloc()</code> call in generated C. No Objective-C compiler or runtime is involved at build time — GCC compiles the output.</p>
+      </li>
+
+      <li>
+        <h3>Build</h3>
+<pre><code>west build -p -b mps2/an385 .</code></pre>
+        <p>Prerequisites: the Zephyr SDK and west, Clang 20+ for AST analysis, Python 3, and <a href="https://github.com/casey/just" rel="noopener noreferrer">just</a> if you want the repo's build recipes. Twelve runnable samples ship in <code>samples/</code>, from <code>hello_world</code> to zbus pub/sub and a request-response service.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section id="limitations">
+  <div class="wrap">
+    <p class="eyebrow">Limitations</p>
+    <h2>What it will not do</h2>
+    <p class="lede">The subset is a deliberate trade. Know these before you commit a project to it.</p>
+
+    <ul class="tight">
+      <li><strong>Non-capturing blocks only</strong> — a block that captures a local variable is a transpile-time diagnostic error. Share state through a file-scope <code>static</code> or a <code>__block</code> variable instead.</li>
+      <li><strong><code>__block</code> becomes file-scope <code>static</code></strong> — initialized once at program start, not on each entry to the enclosing function.</li>
+      <li><strong>No <code>typedef</code></strong> — use explicit types.</li>
+      <li><strong>No <code>@try</code> / <code>@catch</code> / <code>@throw</code></strong> — no exception handling.</li>
+      <li><strong>No <code>__weak</code></strong> — it panics at runtime. Break retain cycles with <code>__unsafe_unretained</code> or by clearing the back-reference before scope exit.</li>
+      <li><strong>No dynamic dispatch for non-protocol methods</strong> — everything is resolved statically.</li>
+      <li><strong>Single inheritance</strong> — an Objective-C constraint, not a transpiler one.</li>
+      <li><strong><code>OZQ31</code> is Q31+shift</strong> — converts to int8/16/32 and float; no int64 or double.</li>
+    </ul>
+
+    <p class="note">The full list, including control-flow and collection details, lives in <a href="https://github.com/rodrigopex/objective-z/blob/main/docs/LIMITATIONS.md" rel="noopener noreferrer">docs/LIMITATIONS.md</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="footer-logo">
+        <img class="only-light" src="/assets/citrinio-light.svg" width="325" height="89" alt="Citrinio">
+        <img class="only-dark" src="/assets/citrinio-dark.svg" width="325" height="89" alt="" aria-hidden="true">
+      </p>
+      <p class="footer-note">Objective-Z is created and maintained by Citrinio. Released under the Apache-2.0 license. Currently v0.5.99, pre-1.0.</p>
+    </div>
+
+    <div class="footer-links">
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/rodrigopex/objective-z" rel="noopener noreferrer">Source on GitHub</a></li>
+          <li><a href="https://github.com/rodrigopex/objective-z/blob/main/README.md" rel="noopener noreferrer">README</a></li>
+          <li><a href="https://github.com/rodrigopex/objective-z/blob/main/docs/LIMITATIONS.md" rel="noopener noreferrer">Limitations</a></li>
+          <li><a href="https://github.com/rodrigopex/objective-z/tree/main/samples" rel="noopener noreferrer">Samples</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>This page</h4>
+        <ul>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#alternatives">Alternatives</a></li>
+          <li><a href="#vs-cpp">vs C++</a></li>
+          <li><a href="#quickstart">Quick start</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Zephyr</h4>
+        <ul>
+          <li><a href="https://docs.zephyrproject.org/latest/develop/getting_started/index.html" rel="noopener noreferrer">Getting started</a></li>
+          <li><a href="https://docs.zephyrproject.org/latest/" rel="noopener noreferrer">Documentation</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
