@@ -7,9 +7,14 @@
 #ifndef BOOL
 #define BOOL _Bool
 #endif
+#include <zephyr/kernel.h>
+
+#include <zephyr/zbus/zbus.h>
+
 
 struct OZObject;
 struct Hygrometer;
+struct OZTimer;
 struct Thermometer;
 struct Thermostat;
 
@@ -18,9 +23,10 @@ typedef struct OZObject *id;
 enum oz_class_id_enum {
 	OZ_CLASS_OZObject = 0,
 	OZ_CLASS_Hygrometer = 1,
-	OZ_CLASS_Thermometer = 2,
-	OZ_CLASS_Thermostat = 3,
-	OZ_CLASS_COUNT = 4
+	OZ_CLASS_OZTimer = 2,
+	OZ_CLASS_Thermometer = 3,
+	OZ_CLASS_Thermostat = 4,
+	OZ_CLASS_COUNT = 5
 };
 
 /* Class introspection tables */

@@ -959,7 +959,9 @@ summary .hint {
 
 .start-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+  /* 24rem keeps this to two columns; at 20rem it became three and the
+     code lines no longer fit. */
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
   gap: 0 1.75rem;
   margin-top: 1.75rem;
 }

@@ -2,10 +2,12 @@
 #include "oz_dispatch.h"
 #include "OZObject_ozh.h"
 #include "thermostat_ozh.h"
+#include "OZTimer_ozh.h"
 
 const char *const oz_class_names[OZ_CLASS_COUNT] = {
 	[OZ_CLASS_OZObject] = "OZObject",
 	[OZ_CLASS_Hygrometer] = "Hygrometer",
+	[OZ_CLASS_OZTimer] = "OZTimer",
 	[OZ_CLASS_Thermometer] = "Thermometer",
 	[OZ_CLASS_Thermostat] = "Thermostat",
 };
@@ -13,6 +15,7 @@ const char *const oz_class_names[OZ_CLASS_COUNT] = {
 const uint8_t oz_superclass_id[OZ_CLASS_COUNT] = {
 	[OZ_CLASS_OZObject] = OZ_CLASS_COUNT,
 	[OZ_CLASS_Hygrometer] = OZ_CLASS_OZObject,
+	[OZ_CLASS_OZTimer] = OZ_CLASS_OZObject,
 	[OZ_CLASS_Thermometer] = OZ_CLASS_OZObject,
 	[OZ_CLASS_Thermostat] = OZ_CLASS_OZObject,
 };
@@ -31,6 +34,7 @@ void OZObject_dispatch_free(struct OZObject *obj)
 	switch (obj->_meta.class_id) {
 	case OZ_CLASS_OZObject: OZObject_free((struct OZObject *)obj); break;
 	case OZ_CLASS_Hygrometer: Hygrometer_free((struct Hygrometer *)obj); break;
+	case OZ_CLASS_OZTimer: OZTimer_free((struct OZTimer *)obj); break;
 	case OZ_CLASS_Thermometer: Thermometer_free((struct Thermometer *)obj); break;
 	case OZ_CLASS_Thermostat: Thermostat_free((struct Thermostat *)obj); break;
 	default: break;

@@ -5,6 +5,10 @@
 #include "oz_dispatch.h"
 #include <string.h>
 #include "OZObject_ozh.h"
+#include <zephyr/kernel.h>
+
+#include <zephyr/zbus/zbus.h>
+
 
 struct Thermometer {
 	struct OZObject base;
@@ -12,8 +16,6 @@ struct Thermometer {
 };
 
 int Thermometer_read(struct Thermometer *self);
-int Thermometer_offset(struct Thermometer *self);
-void Thermometer_setOffset_(struct Thermometer *self, int offset);
 void Thermometer_dealloc(struct Thermometer *self);
 
 extern oz_slab_t oz_slab_Thermometer;
@@ -42,6 +44,10 @@ static inline void Thermometer_free(struct Thermometer *obj)
 #include "oz_dispatch.h"
 #include <string.h>
 #include "OZObject_ozh.h"
+#include <zephyr/kernel.h>
+
+#include <zephyr/zbus/zbus.h>
+
 
 struct Hygrometer {
 	struct OZObject base;
@@ -77,15 +83,25 @@ static inline void Hygrometer_free(struct Hygrometer *obj)
 #include "oz_dispatch.h"
 #include <string.h>
 #include "OZObject_ozh.h"
+#include <zephyr/kernel.h>
+
+#include <zephyr/zbus/zbus.h>
+
 
 struct Thermostat {
 	struct OZObject base;
-	struct Thermometer * _probe;
 	int _setpoint;
+	bool _heating;
+	struct Thermometer * _probe;
+	struct OZTimer * _poll;
 };
 
-void Thermostat_setProbe_(struct Thermostat *self, struct Thermometer * probe);
+struct Thermostat * Thermostat_initWithProbe_pollEvery_(struct Thermostat *self, struct Thermometer * probe, uint32_t periodMs);
 BOOL Thermostat_shouldHeat(struct Thermostat *self);
+int Thermostat_setpoint(struct Thermostat *self);
+void Thermostat_setSetpoint_(struct Thermostat *self, int setpoint);
+BOOL Thermostat_isHeating(struct Thermostat *self);
+void Thermostat_setHeating_(struct Thermostat *self, BOOL heating);
 void Thermostat_dealloc(struct Thermostat *self);
 
 extern oz_slab_t oz_slab_Thermostat;
