@@ -156,6 +156,18 @@ sed 's/fill="#2C3D4F"/fill="#E8EEF4"/g' assets/citrinio-light.svg > assets/citri
 The `citrinio_blue.svg` upstream variant is deliberately NOT used: it bakes in a
 `#2C3D4F` background plate that would show as a box on a dark page.
 
+## Paths
+
+`index.html` uses **relative** asset paths so it works both at a domain root and
+at the `github.io/objective-z.org/` project path it is served from until the
+domain is registered. Do not make them absolute again.
+
+`404.html` keeps absolute paths on purpose — it answers arbitrary URLs, where
+relative paths would resolve below the site root.
+
+The custom domain lives in `CNAME.pending`, not `CNAME`: a live `CNAME` makes
+Pages redirect the github.io URL to a domain that does not resolve yet.
+
 ## Local preview
 
 ```sh
