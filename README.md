@@ -126,11 +126,36 @@ Let's Encrypt from issuing the certificate:
 
 If the zone has any CAA record, at least one must allow `letsencrypt.org`.
 
+### Certificate gotcha, learned the hard way
+
+GitHub runs its DNS check **at the moment you save the custom domain**, and it does
+not retry. Save the domain before DNS resolves and the check fails silently: no
+certificate is ever requested, `https_certificate` is simply absent from the Pages
+API payload, and the site serves GitHub's `*.github.io` wildcard forever — which
+browsers report as *Not Secure*.
+
+The fix is to re-save the domain **after** DNS resolves: Settings → Pages →
+Custom domain → clear the field → Save → re-enter → Save. Writing the same value
+back via the API is a no-op and will not trigger the check; it has to be a real
+change. Once the check passes, the certificate is issued within minutes and
+GitHub enables Enforce HTTPS itself.
+
+So the order is: set DNS first, confirm it resolves (`dig +short objective-z.org`),
+*then* set the custom domain.
+
 Once Pages reports *DNS check successful*, tick **Enforce HTTPS**. The
 certificate has to be issued after both the apex and `www` resolve, or the apex
 will not be covered by it.
 
-`objectivez.org` (no hyphen) is held defensively and 301-redirects to the
+### HTTPS scope
+
+Enforce HTTPS is on, so `http://` 301-redirects to `https://`. Port 80 cannot be
+closed — Pages keeps it open to serve that redirect. Pages sends **no HSTS header**
+for custom domains and gives no way to add one, so a visitor's first plain-`http://`
+request is still in cleartext before the redirect. Closing that would mean putting
+a proxy in front of Pages; deliberately not done.
+
+`objectivez.org` (no hyphen) can be held defensively and 301-redirected to the
 canonical domain at the registrar. It cannot be done on GitHub — Pages accepts
 only one custom domain per repository.
 
